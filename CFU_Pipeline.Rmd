@@ -145,8 +145,6 @@ level in the data:
 
 
 ```{r}
-# Make all_data into tidy data and filter for CFUs between 3-95
-
 #choose max cfu in each sample
 
 
@@ -188,53 +186,6 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
 
 
 tidy_cfu_meta_joined
-
-```
-
-## Create initial report information for these data
-```{r}
-#NEED TO INCLUDE CONTROL FOR STAT COMPARE MEANS 
-# tidy_cfu_meta_joined %>%
-#   dplyr::filter(organ == "lung") %>%
-#   mutate(group = fct_relevel(group, "Saline",
-#             "BCG", "BCG + BCG", "IN", "IM", "Inulin", "CPG", "BCG + SolaVAX IN", "BCG + SolaVAX IM")) %>%
-#   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group))+
-#  geom_boxplot(aes(x = group, y = log10(CFUs_whole)), 
-#                geom = 'errorbar', linetype = 1, width = .5, alpha = 0.5) +
-#   geom_point(show.legend = FALSE)+
-#   labs(title = paste0("SolaVAX Day 90 Lung CFU"), x = "Group", y = "Log10 CFU",
-#        color = "Group")+
-#   guides(shape = "none")+
-#   theme_minimal() +
-#   scale_y_continuous(expand = c(0, 0), limits = c(2.5, 5.1)) +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-# 
-# 
-# 
-# 
-# 
-# tidy_lung_cfu_plot <- tidy_cfu_meta_joined %>%
-#   dplyr::filter(organ == "lung") %>%
-#   filter(!group %in% c("Inulin", "CPG", "IM", "IN")) %>%
-#   mutate(group = fct_relevel(group, "Saline", "BCG", "BCG + BCG", "BCG + SolaVAX IN", "BCG + SolaVAX IM")) %>%
-#   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
-#   geom_boxplot(aes(x = group, y = log10(CFUs_whole)), 
-#                geom = 'errorbar', linetype = 1, width = .5, alpha = 0.5) +
-#   geom_point(show.legend = FALSE) +
-#   labs(title = paste0("SolaVAX Day 90 Lung CFU"), x = "Group", y = "Log10 CFU", color = "Group") +
-#   guides(shape = "none") +
-#   theme_minimal() +
-#   scale_y_continuous(expand = c(0, 0), limits = c(2.5, 5.1)) +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-# 
-# 
-# tidy_cfu_meta_joined1 <- tidy_cfu_meta_joined %>%
-#   dplyr::filter(organ == "lung") %>%
-#   filter(!group %in% c("Inulin", "CPG", "IM", "IN")) %>%
-#   mutate(group = fct_relevel(group, "Saline", "BCG", "BCG + BCG", "BCG + SolaVAX IN", "BCG + SolaVAX IM"))
-# 
-# tidy_cfu_meta_joined1 <- tidy_cfu_meta_joined1 %>%
-#    filter(!(group == "BCG + SolaVAX IM" & mouse %in% c("A", "B")))
 
 ```
 
@@ -322,18 +273,6 @@ tidy_cfu_meta_joined %>%
     y = "Log10 Lung CFU",
     fill = "Group") +
   ylim(4, 7)
-
-
-
-
-# 
-#  geom_signif(
-#     comparisons = list(c("Saline", "BCG + SolaVAX IM")),
-#     map_signif_level = TRUE,
-#     y_position = 4.9,
-#     textsize = 6,
-#     vjust = 0.2,
-#     aes(group = NULL, color = NULL)) 
 ```
 
 
