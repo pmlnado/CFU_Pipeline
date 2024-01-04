@@ -63,7 +63,7 @@ library(ggpubr)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU pipeline/IMPAcTB_CFU_Day_14_Option1.xlsx")
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/CFU_Test_Data.xlsx")
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
