@@ -276,10 +276,13 @@ left_join(female_combined_df, male_combined_df, by = "group")
 #   ylim(4, 7)
 
 
-ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
+tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+  rename(Vaccine = group)
+
+ggplot(tidy_cfu_meta_joined, aes(x = Vaccine, y = log10(CFUs_whole), fill = Vaccine, color = Vaccine)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
-  geom_boxplot(aes(fill = group), alpha = 0.3) + facet_wrap(~ sex) + 
+  geom_boxplot(aes(fill = Vaccine), alpha = 0.3) + facet_wrap(~ sex) + 
   scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
   scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
   theme_bw() + 
@@ -288,11 +291,11 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         axis.text.y = element_text(size = 16),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 16, face = "bold"),
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 12), 
         legend.key.size = unit(1, 'cm'), 
         plot.title = element_text(color="black", size=20, face="bold")) + 
-  theme(strip.text = element_text(size=24, face = "bold")) +
+  theme(strip.text = element_text(size=16, face = "bold")) +
 labs (y="Log10 CFU") +
   ggtitle("Lung CFU") +
   ylim(4, 7)
