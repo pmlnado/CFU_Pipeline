@@ -63,7 +63,7 @@ library(ggpubr)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/CFU_Test_Data.xlsx")
+path <- c("//Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day30_cfu_numbers.xlsx")
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
@@ -124,12 +124,13 @@ all_data %>%
 all_data <- all_data %>%
   filter(CFUs != "TNTC")
 
-all_data$group = factor(all_data$group, levels = c("Saline", "BCG", "ID93", "BCG+ID93"))
+all_data$group = factor(all_data$group, levels = c("Saline",
+            "BCG", "BCG + BCG", "IN", "IM", "Inulin", "CPG", "BCG + SolaVAX IN", "BCG + SolaVAX IM"))
 
-all_data <- all_data %>%
-  mutate(group = recode(group,
-                         "ID93" = "ID93+GLA-SE",
-                         "BCG+ID93" = "BCG-ID93+GLA-SE"))
+# all_data <- all_data %>%
+#   mutate(group = recode(group,
+#                          "ID93" = "ID93+GLA-SE",
+#                          "BCG+ID93" = "BCG-ID93+GLA-SE"))
 head(all_data)
 
 ```
@@ -164,7 +165,7 @@ tidy_cfu_data <- all_data %>%
          dilution = as.numeric(dilution)) %>%
   mutate(CFUs = as.numeric(CFUs)) %>%
   filter(CFUs >= 2, CFUs <= 200) %>%
-  group_by(group, mouse, organ, sex) %>%
+  group_by(group, mouse, organ) %>%
   slice(which.min(ifelse(CFUs >= 10 & CFUs <= 200, dilution, Inf))) %>%
   ungroup()
 
@@ -181,7 +182,7 @@ meta <- read_excel(path, sheet = "metadata")
 tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
   mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
-  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, sex, 
+  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
 
@@ -279,7 +280,8 @@ left_join(female_combined_df, male_combined_df, by = "group")
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
-  geom_boxplot(aes(fill = group), alpha = 0.3) + facet_wrap(~ sex) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  #facet_wrap(~ sex) + 
   scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
   scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
   theme_bw() + 
