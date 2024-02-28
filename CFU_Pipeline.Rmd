@@ -63,7 +63,8 @@ library(ggpubr)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/CFU_Test_Data.xlsx")
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPACTB_CFU_BASE_Period_D56_Lung.xlsx")
+
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
@@ -163,12 +164,13 @@ tidy_cfu_data <- all_data %>%
   mutate(dilution = str_extract(dilution, "[0-9]+"),
          dilution = as.numeric(dilution)) %>%
   mutate(CFUs = as.numeric(CFUs)) %>%
-  filter(CFUs >= 2, CFUs <= 200) %>%
+  filter(CFUs >= 1, CFUs <= 100) %>%
   group_by(group, mouse, organ, sex) %>%
-  slice(which.min(ifelse(CFUs >= 10 & CFUs <= 200, dilution, Inf))) %>%
+  slice(which.min(ifelse(CFUs >= 1 & CFUs <= 100, dilution, Inf))) %>%
   ungroup()
 
 tidy_cfu_data
+
 ```
 
 
@@ -295,7 +297,7 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
   theme(strip.text = element_text(size=24, face = "bold")) +
 labs (y="Log10 CFU") +
   ggtitle("Lung CFU") +
-  ylim(4, 7)
+  ylim(4.5, 6)
 
 ```
 
