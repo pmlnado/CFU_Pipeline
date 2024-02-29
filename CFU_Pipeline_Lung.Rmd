@@ -63,7 +63,7 @@ library(ggpubr)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPACTB_CFU_BASE_Period_D56_Lung.xlsx")
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPACTB_CFU_Op1_D56_Lung.xlsx")
 
 
 sheet_names <- excel_sheets(path)
@@ -182,7 +182,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.5) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, sex, 
          CFUs, CFUs_whole) %>% 
   ungroup()
