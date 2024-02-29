@@ -315,6 +315,7 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
 labs (y="Log10 CFU", fill = "Vaccine") +
   ggtitle("SolaVAX-TB 2x Boost Day 30 CFU") +
   ylim(4.5, 6)
+
 ```
 
 
