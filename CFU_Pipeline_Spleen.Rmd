@@ -278,6 +278,7 @@ left_join(female_combined_df, male_combined_df, by = "group")
 #   ylim(4, 7)
 
 
+
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
