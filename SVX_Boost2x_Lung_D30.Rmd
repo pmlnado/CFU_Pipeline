@@ -59,6 +59,10 @@ library(tidyverse)
 library(gridExtra)
 library(ggplot2)
 library(ggpubr)
+library(viridis)
+library(vcd)
+library(ggmosaic)
+library(kableExtra)
 ```
 
 ```{r}
@@ -190,11 +194,11 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
          CFUs, CFUs_whole) %>% 
   ungroup()
 
-tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
-
-tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-  filter(!(mouse == "B" & group == "BCG 1x"))
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+# 
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "B" & group == "BCG 1x"))
 
 tidy_cfu_meta_joined 
 ```
@@ -311,6 +315,8 @@ with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CF
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group)) +#, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
+    scale_color_viridis_d(name = " ", alpha = 1) +  
+  scale_fill_viridis_d(name = " ", alpha = 1) + 
   geom_boxplot(aes(fill = group), alpha = 0.3) + 
   theme_minimal() + 
   theme(
