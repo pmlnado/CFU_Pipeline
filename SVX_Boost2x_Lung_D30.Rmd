@@ -191,7 +191,10 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   ungroup()
 
 tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-AdVAX 2x"))
+  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+
+tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+  filter(!(mouse == "B" & group == "BCG 1x"))
 
 tidy_cfu_meta_joined 
 ```
@@ -274,7 +277,7 @@ kable(comparison_df, caption = "Comparison Results", align = "c")
 ```
 
 
-```{r fig.height=5, fig.width=5}
+```{r fig.height=, fig.width=}
 # tidy_cfu_meta_joined %>%
 #   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group)) +
 #   geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", cex = 1.5, position = position_dodge(width = .75)) +
@@ -303,7 +306,8 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
   geom_boxplot(aes(fill = group), alpha = 0.3) + 
   theme_minimal() + 
   theme(
-        axis.text.x = element_text(angle = 90, hjust = 1, size = 16), 
+        axis.text.x = element_blank(),
+        #axis.text.x = element_text(angle = 90, hjust = 1, size = 16), 
         axis.text.y = element_text(size = 16),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 16, face = "bold"),
