@@ -274,10 +274,18 @@ kable(comparison_df, caption = "Comparison Results", align = "c")
 # male_combined_df
 # 
 # left_join(female_combined_df, male_combined_df, by = "group")
+
+
+
+
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+
+
 ```
 
 
-```{r fig.height=, fig.width=}
+```{r fig.height=, fig.width=5}
 # tidy_cfu_meta_joined %>%
 #   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group)) +
 #   geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", cex = 1.5, position = position_dodge(width = .75)) +
