@@ -128,14 +128,22 @@ all_data %>%
 all_data <- all_data %>%
   filter(CFUs != "TNTC")
 
-all_data$group = factor(all_data$group, levels = c("Saline",
-            "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
+# all_data$group = factor(all_data$group, levels = c("Saline",
+#             "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
 
 # all_data <- all_data %>%
 #   mutate(group = recode(group,
 #                          "old name" = "new name",
 #                          "old name" = "new name"))
-head(all_data)
+
+
+all_data <- all_data %>%
+  dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+
+all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+
+all_data
+
 
 ```
 
@@ -194,11 +202,11 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
          CFUs, CFUs_whole) %>% 
   ungroup()
 
-# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
-# 
-# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-#   filter(!(mouse == "B" & group == "BCG 1x"))
+tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+
+tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+  filter(!(mouse == "B" & group == "BCG 1x"))
 
 tidy_cfu_meta_joined 
 ```
@@ -283,13 +291,13 @@ kable(comparison_df, caption = "Comparison Results", align = "c")
 
 
 with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+#with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
 
 
 ```
 
 
-```{r fig.height=, fig.width=5}
+```{r fig.height=, fig.width=6}
 # tidy_cfu_meta_joined %>%
 #   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group)) +
 #   geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", cex = 1.5, position = position_dodge(width = .75)) +
@@ -328,12 +336,12 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16), 
         legend.key.size = unit(1, 'cm'), 
+        legend.position = ("bottom"),
         plot.title = element_text(color="black", size=20, face="bold")) + 
   theme(strip.text = element_text(size=24, face = "bold")) +
 labs (y="Log10 CFU", fill = "Vaccine") +
   ggtitle("SolaVAX-TB 2x Boost Day 30 CFU") +
   ylim(4.5, 6)
-
 ```
 
 
