@@ -131,16 +131,16 @@ all_data <- all_data %>%
 # all_data$group = factor(all_data$group, levels = c("Saline",
 #             "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
 
-# all_data <- all_data %>%
-#   mutate(group = recode(group,
-#                          "old name" = "new name",
-#                          "old name" = "new name"))
-
 
 all_data <- all_data %>%
   dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
 
 all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+
+all_data <- all_data %>%
+  mutate(group = recode(group,
+                         "BCG + SolaVAX-IM-CpG 2x" = "BCG + SolaVAX-IM-CpG1018 2x",
+                         "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
 
 all_data
 
@@ -203,7 +203,7 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   ungroup()
 
 tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
 
 tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
   filter(!(mouse == "B" & group == "BCG 1x"))
