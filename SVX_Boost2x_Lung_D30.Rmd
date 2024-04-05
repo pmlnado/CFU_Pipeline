@@ -297,7 +297,7 @@ with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CF
 ```
 
 
-```{r fig.height=, fig.width=6}
+```{r}
 # tidy_cfu_meta_joined %>%
 #   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group)) +
 #   geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", cex = 1.5, position = position_dodge(width = .75)) +
