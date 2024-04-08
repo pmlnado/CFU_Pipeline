@@ -63,7 +63,7 @@ library(ggpubr)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPACTB_CFU_Op1_D56_Lung.xlsx")
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Option1/IMPACTB_CFU_Op1_AllDays_Lung.xlsx")
 
 
 sheet_names <- excel_sheets(path)
@@ -281,7 +281,8 @@ left_join(female_combined_df, male_combined_df, by = "group")
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
-  geom_boxplot(aes(fill = group), alpha = 0.3) + facet_wrap(~ sex) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  #facet_wrap(~ sex) + 
   scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
   scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
   theme_bw() + 
