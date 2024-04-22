@@ -67,7 +67,7 @@ library(kableExtra)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("//Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day30_cfu_numbers.xlsx")
+path <- c("//Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Spleen_Day30_cfu_numbers.xlsx")
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
@@ -93,7 +93,7 @@ all_data <- bind_rows(merged_data, .id = "column_label") %>%
     dplyr::select(-column_label)
   
 head(merged_data)
-head(all_data)
+all_data
 ```
 
 ## Exploratory analysis and quality checks
@@ -128,21 +128,22 @@ all_data %>%
 all_data <- all_data %>%
   filter(CFUs != "TNTC")
 
-# all_data$group = factor(all_data$group, levels = c("Saline",
-#             "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
+all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
 
-
-all_data <- all_data %>%
-  dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
-
-all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+# FILTERING GROUPS
+# all_data <- all_data %>%
+#   dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+# 
+# all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
 
 all_data <- all_data %>%
   mutate(group = recode(group,
                          "BCG + SolaVAX-IM-CpG 2x" = "BCG + SolaVAX-IM-CpG1018 2x",
                          "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
 
-all_data
+
+all_data %>%
+  distinct(group)
 
 
 ```
@@ -177,7 +178,8 @@ tidy_cfu_data <- all_data %>%
          dilution = as.numeric(dilution)) %>%
   mutate(CFUs = as.numeric(CFUs)) %>%
   filter(CFUs >= 2, CFUs <= 120) %>%
-# filter(dilution == 5) %>%
+  #filter(dilution == 5) %>%
+  filter(dilution %in% c(2, 3)) %>%
   group_by(group, mouse, organ) %>%
   slice(which.min(ifelse(CFUs >= 2 & CFUs <= 120, dilution, Inf))) %>% # which.min returns the index of the row with the minimum dilution value within the specified CFUs range
   ungroup()
@@ -197,16 +199,16 @@ meta <- read_excel(path, sheet = "metadata")
 
 tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
 
-tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-  filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
-
-tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-  filter(!(mouse == "B" & group == "BCG 1x"))
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+# 
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "B" & group == "BCG 1x"))
 
 tidy_cfu_meta_joined 
 ```
@@ -291,13 +293,18 @@ kable(comparison_df, caption = "Comparison Results", align = "c")
 
 
 with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
-#with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
+with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
 
 
 ```
 
 
-```{r}
+```{r fig.width=5}
 # tidy_cfu_meta_joined %>%
 #   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group)) +
 #   geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", cex = 1.5, position = position_dodge(width = .75)) +
@@ -336,12 +343,12 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16), 
         legend.key.size = unit(1, 'cm'), 
-        legend.position = ("bottom"),
+        legend.position = ("right"),
         plot.title = element_text(color="black", size=20, face="bold")) + 
   theme(strip.text = element_text(size=24, face = "bold")) +
 labs (y="Log10 CFU", fill = "Vaccine") +
-  ggtitle("SolaVAX-TB 2x Boost Day 30 CFU") +
-  ylim(4.5, 6)
+  ggtitle("SolaVAX-TB 2x Boost Day 30 Spleen CFU       Df:5   Plated 50% of organ") +
+  ylim(2.5, 5)
 ```
 
 
