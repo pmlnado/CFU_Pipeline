@@ -67,7 +67,7 @@ library(kableExtra)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx")
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Spleen_Day30_cfu_numbers.xlsx")
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
@@ -347,8 +347,8 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=20, face="bold")) + 
   theme(strip.text = element_text(size=24, face = "bold")) +
 labs (y="Log10 CFU", fill = "Vaccine") +
-  ggtitle("SolaVAX-TB 2x Boost Day 90 Lung CFU       Df:5   Plated 50% of organ") +
-  ylim(4, 7)
+  ggtitle("SolaVAX-TB 2x Boost Day 30 Spleen CFU       Df:5") +
+  ylim(2, 6)
 ```
 
 
