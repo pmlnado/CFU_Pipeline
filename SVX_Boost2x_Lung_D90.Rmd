@@ -199,7 +199,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -347,7 +347,7 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=20, face="bold")) + 
   theme(strip.text = element_text(size=24, face = "bold")) +
 labs (y="Log10 CFU", fill = "Vaccine") +
-  ggtitle("SolaVAX-TB 2x Boost Day 90 Lung CFU       Df:5   Plated 50% of organ") +
+  ggtitle("SolaVAX-TB 2x Boost Day 90 Lung CFU       Df:5") +
   ylim(4, 7)
 ```
 
