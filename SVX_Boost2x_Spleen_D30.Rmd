@@ -130,11 +130,6 @@ all_data <- all_data %>%
 
 all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
 
-# FILTERING GROUPS
-# all_data <- all_data %>%
-#   dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
-# 
-# all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
 
 all_data <- all_data %>%
   mutate(group = recode(group,
@@ -325,6 +320,10 @@ with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CF
 #     y = "Log10 Lung CFU",
 #     fill = "Group") +
 #   ylim(4, 7)
+
+# FILTERING GROUPS
+tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+  dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
 
 
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group)) +#, color = group)) +

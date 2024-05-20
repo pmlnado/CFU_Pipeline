@@ -327,7 +327,9 @@ with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CF
 #     fill = "Group") +
 #   ylim(4, 7)
 
-
+# FILTERING GROUPS
+tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+  dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
 
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group)) +#, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
