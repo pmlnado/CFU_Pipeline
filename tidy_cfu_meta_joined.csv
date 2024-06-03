@@ -1,0 +1,41 @@
+"organ","count_date","who_plated","who_counted","group","mouse","dilution","CFUs","CFUs_whole"
+"spleen","""February 22 2024""","PM","PM","Saline","A",3,10,12500
+"spleen","""February 22 2024""","PM","PM","Saline","B",3,60,75000
+"spleen","""February 22 2024""","PM","PM","Saline","C",3,34,42500
+"spleen","""February 22 2024""","PM","PM","Saline","D",2,28,7000
+"spleen","""February 22 2024""","PM","PM","Saline","E",2,54,13500
+"spleen","""February 22 2024""","PM","PM","BCG 1x","A",2,26,6500
+"spleen","""February 22 2024""","PM","PM","BCG 1x","B",2,21,5250
+"spleen","""February 22 2024""","PM","PM","BCG 1x","C",3,3,3750
+"spleen","""February 22 2024""","PM","PM","BCG 1x","D",1,18,900
+"spleen","""February 22 2024""","PM","PM","BCG 1x","E",3,8,10000
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","A",2,24,6000
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","B",2,63,15750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","C",2,55,13750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","D",2,62,15500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","E",3,41,51250
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","A",2,47,11750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","B",2,46,11500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","C",3,13,16250
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","D",2,14,3500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","E",3,5,6250
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","A",3,27,33750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","B",2,54,13500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","C",2,52,13000
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","D",1,30,1500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","E",3,17,21250
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","A",3,11,13750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","B",2,71,17750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","C",2,62,15500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","D",1,28,1400
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","E",2,24,6000
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","A",3,7,8750
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","B",3,16,20000
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","C",2,22,5500
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","D",2,32,8000
+"spleen","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","E",2,32,8000
+"spleen","""February 22 2024""","PM","PM","BCG 2x","A",1,16,800
+"spleen","""February 22 2024""","PM","PM","BCG 2x","B",3,29,36250
+"spleen","""February 22 2024""","PM","PM","BCG 2x","C",2,41,10250
+"spleen","""February 22 2024""","PM","PM","BCG 2x","D",3,23,28750
+"spleen","""February 22 2024""","PM","PM","BCG 2x","E",3,17,21250

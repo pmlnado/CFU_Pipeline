@@ -1,0 +1,40 @@
+"organ","count_date","who_plated","who_counted","group","mouse","dilution","CFUs","CFUs_whole"
+"lung","""February 22 2024""","PM","PM","Saline","A",5,19,593750
+"lung","""February 22 2024""","PM","PM","Saline","B",4,49,306250
+"lung","""February 22 2024""","PM","PM","Saline","C",5,53,1656250
+"lung","""February 22 2024""","PM","PM","Saline","D",5,21,656250
+"lung","""February 22 2024""","PM","PM","BCG 1x","A",4,48,3e+05
+"lung","""February 22 2024""","PM","PM","BCG 1x","B",4,92,575000
+"lung","""February 22 2024""","PM","PM","BCG 1x","C",4,49,306250
+"lung","""February 22 2024""","PM","PM","BCG 1x","D",4,42,262500
+"lung","""February 22 2024""","PM","PM","BCG 1x","E",4,28,175000
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","A",4,44,275000
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","B",4,25,156250
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","C",3,99,123750
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","D",4,96,6e+05
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 2x","E",4,65,406250
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","A",4,72,450000
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","B",4,40,250000
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","C",3,77,96250
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","D",3,43,53750
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018","E",4,62,387500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","A",4,38,237500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","B",4,66,412500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","C",4,40,250000
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","D",4,33,206250
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX 2x","E",4,57,356250
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","A",4,31,193750
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","B",4,31,193750
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","C",3,46,57500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","D",4,65,406250
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX","E",4,54,337500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","A",3,38,47500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","B",3,44,55000
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","C",3,15,18750
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","D",3,18,22500
+"lung","""February 22 2024""","PM","PM","BCG + SolaVAX-IN-Laporte 2x","E",3,33,41250
+"lung","""February 22 2024""","PM","PM","BCG 2x","A",4,35,218750
+"lung","""February 22 2024""","PM","PM","BCG 2x","B",3,77,96250
+"lung","""February 22 2024""","PM","PM","BCG 2x","C",4,85,531250
+"lung","""February 22 2024""","PM","PM","BCG 2x","D",3,120,150000
+"lung","""February 22 2024""","PM","PM","BCG 2x","E",4,39,243750
