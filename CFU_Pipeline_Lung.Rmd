@@ -172,6 +172,30 @@ tidy_cfu_data <- all_data %>%
 tidy_cfu_data
 
 ```
+```{r}
+# Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
+
+meta <- read_excel(path, sheet = "metadata")
+lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+  group_by(group) %>% 
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
+  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
+         CFUs, CFUs_whole) %>% 
+  ungroup()
+
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+# 
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "B" & group == "BCG 1x"))
+
+lungoption1tidy_cfu_meta_joined 
+
+write.csv(lungoption1tidy_cfu_meta_joined, "lungoption1tidy_cfu_meta_joined.csv", row.names = FALSE)
+
+# Print the dataframe
+lungoption1tidy_cfu_meta_joined
+```
 
 
 ## Calculate CFUs from best dilution/Estimate bacterial load for each sample based on good dilution
