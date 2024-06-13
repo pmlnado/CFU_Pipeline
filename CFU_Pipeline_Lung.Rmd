@@ -182,7 +182,7 @@ meta <- read_excel(path, sheet = "metadata")
 lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
   mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
-  dplyr::select(organ, count_date, day, who_plated, who_counted, group,  mouse, dilution, 
+  dplyr::select(organ, count_date, day, who_plated, who_counted, group, sex, mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
 
