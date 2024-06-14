@@ -10,7 +10,7 @@ output:
 subtitle: Innate Immunity Pilot
 ---
 
-```{r global options, echo=FALSE, warning=FALSE, message=FALSE}
+```{r global options, echo=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = FALSE, error = FALSE, message = FALSE, warning = FALSE)
 ```
 
@@ -196,7 +196,6 @@ lungoption1tidy_cfu_meta_joined
 
 write.csv(lungoption1tidy_cfu_meta_joined, "lungoption1tidy_cfu_meta_joined.csv", row.names = FALSE)
 
-# Print the dataframe
 lungoption1tidy_cfu_meta_joined
 ```
 
