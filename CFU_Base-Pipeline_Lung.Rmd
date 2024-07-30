@@ -179,7 +179,7 @@ tidy_cfu_data
 
 meta <- read_excel(path, sheet = "metadata")
 
-lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+lungbasetidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
   mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
   dplyr::select(organ, count_date, day, who_plated, who_counted, group, sex, mouse, dilution, 
@@ -192,11 +192,11 @@ lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
 #   filter(!(mouse == "B" & group == "BCG 1x"))
 
-lungoption1tidy_cfu_meta_joined 
+lungbasetidy_cfu_meta_joined
 
-write.csv(lungoption1tidy_cfu_meta_joined, "lungbasetidy_cfu_meta_joined.csv", row.names = FALSE)
+write.csv(lungbasetidy_cfu_meta_joined, "lungbasetidy_cfu_meta_joined.csv", row.names = FALSE)
 
-lungoption1tidy_cfu_meta_joined
+lungbasetidy_cfu_meta_joined
 ```
 
 
