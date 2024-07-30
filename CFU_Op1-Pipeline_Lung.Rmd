@@ -1,0 +1,414 @@
+---
+title: "Svx D90 CFUs"
+author:
+- name: Pablo Maldonado
+  affiliation: Colorado State University
+date: '2023-08-17'
+output:
+  html_document: default
+  word_document: default
+subtitle: Innate Immunity Pilot
+---
+
+```{r global options, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE, error = FALSE, message = FALSE, warning = FALSE)
+```
+
+## Data description
+
+The data are collected in a spreadsheet with multiple sheets. The first sheet
+(named "[x]") is used to record some metadata for the experiment, while the 
+following sheets are used to record CFUs counts from the plates used for samples
+from each organ, with one sheet per organ. For example, if you plated data
+from both the lung and spleen, there would be three sheets in the file: one 
+with the metadata, one with the plate counts for the lung, and one with the
+plate counts for the spleen. 
+
+The metadata sheet is used to record information about the overall process of
+plating the data. Values from this sheet will be used in calculating the bacterial
+load in the original sample based on the CFU counts. This spreadsheet includes
+the following columns: 
+
+- `organ`: Include one row for each organ that was plated in the experiment. 
+You should name the organ all in lowercase (e.g., "lung", "spleen"). You 
+should use the same name to also name the sheet that records data for that organ
+for example, if you have rows in the metadata sheet for "lung" and "spleen", 
+then you should have two other sheets in the file, one sheet named "lung" and 
+one named "spleen", which you'll use to store the plate counts for each of those
+organs.
+- `prop_resuspended`: In this column, give the proportion of that organ that 
+was plated. For example, if you plated half the lung, then in the "lung" row
+of this spread sheet, you should put 0.5 in the `prop_resuspended` column. 
+- `total_resuspended_uL`: This column contains an original volume of tissue homogenate. 
+For example, raw lung tissue is homogenized in 500 uL of PBS in a tube containing metal beads. 
+- `og_aliquot_uL`: 100 uL of th total_resuspended slurry would be considered an original 
+aliquot and is used to peform serial dilutions.
+- `dilution_factor`: Amount of the original stock solution that is present in the total solution, 
+after dilution(s)
+- `plated_uL`: Amount of suspension + diluent plated on section of solid agar 
+
+## Read in data
+
+```{r}
+library(readxl)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(stringr)
+library(tidyverse)
+library(gridExtra)
+library(ggplot2)
+library(ggpubr)
+```
+
+```{r}
+#Replace w/ path to CFU sheet
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Option1/IMPACTB_CFU_Op1_AllDays_Lung.xlsx")
+
+
+sheet_names <- excel_sheets(path)
+sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
+
+merged_data <- list()
+
+for(i in 1:length(sheet_names)){
+  data <- read_excel(path, sheet = sheet_names[i]) %>% 
+    mutate(organ = paste0(sheet_names[i]))
+  data <- data %>% 
+    #mutate(missing_col = NA) %>% 
+    mutate_if(is.double, as.numeric) %>% 
+    mutate_if(is.numeric, as.character) %>% 
+    pivot_longer(starts_with("dil_"), names_to = "dilution",
+                 values_to = "CFUs") %>% 
+    mutate(dilution = str_extract(dilution, "[0-9]+"),
+           dilution = as.numeric(dilution))
+
+  merged_data[[i]] <- data
+}
+  
+all_data <- bind_rows(merged_data, .id = "column_label") %>% 
+    dplyr::select(-column_label)
+  
+head(merged_data)
+head(all_data)
+```
+
+## Exploratory analysis and quality checks
+
+### Exploratory analysis
+
+**Dimensions of input data:**
+
+Based on the input data, data were collected for the following organ or 
+organs: 
+
+The following number of mice were included for each: 
+
+The following number of replicates were recorded at each count date for 
+each experimental group: 
+
+The following number of dilutions and dilution level were recorded for 
+each organ: 
+
+**People who plated and collected the data. Date or dates of counting:**
+
+Based on the input data, the plates included in these data were counted by 
+the following person or persons: 
+Based on the input data, the plates included in these data were counted on 
+the following date or dates: 
+
+```{r}
+all_data %>%
+  dplyr::select(organ, who_plated, who_counted, count_date) %>%
+  distinct()
+
+all_data <- all_data %>%
+  filter(CFUs != "TNTC")
+
+all_data$group = factor(all_data$group, levels = c("Saline", "BCG", "ID93", "BCG+ID93"))
+
+all_data <- all_data %>%
+  mutate(group = recode(group,
+                         "ID93" = "ID93+GLA-SE",
+                         "BCG+ID93" = "BCG-ID93+GLA-SE"))
+head(all_data)
+
+```
+
+**Distribution of CFUs at each dilution:**
+
+Here's a plot that shows how many plates were too numerous to count at each 
+dilution level: 
+
+Here is a plot that shows how the CFU counts were distributed by dilution
+level in the data: 
+
+## Identify a good dilution for each sample
+
+
+```{r}
+#choose max cfu in each sample
+
+
+# tidy_cfu_data <- all_data %>%
+#   mutate(dilution = str_extract(dilution, "[0-9]+"),
+#          dilution = as.numeric(dilution)) %>%
+#   mutate(CFUs = as.numeric(CFUs)) %>%
+#   filter(CFUs >= 2, CFUs <= 200) %>%
+#   group_by(group, mouse, organ, sex) %>%
+#   slice_max(CFUs) %>%
+#   ungroup()
+
+
+tidy_cfu_data <- all_data %>%
+  mutate(dilution = str_extract(dilution, "[0-9]+"),
+         dilution = as.numeric(dilution)) %>%
+  mutate(CFUs = as.numeric(CFUs)) %>%
+  filter(CFUs >= 1, CFUs <= 100) %>%
+  group_by(group, mouse, organ, sex, day) %>%
+  slice(which.min(ifelse(CFUs >= 1 & CFUs <= 100, dilution, Inf))) %>%
+  ungroup()
+
+tidy_cfu_data
+
+```
+
+
+```{r}
+# Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
+
+meta <- read_excel(path, sheet = "metadata")
+
+lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+  group_by(group) %>% 
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
+  dplyr::select(organ, count_date, day, who_plated, who_counted, group, sex, mouse, dilution, 
+         CFUs, CFUs_whole) %>% 
+  ungroup()
+
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+# 
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "B" & group == "BCG 1x"))
+
+lungoption1tidy_cfu_meta_joined 
+
+write.csv(lungoption1tidy_cfu_meta_joined, "lungoption1tidy_cfu_meta_joined.csv", row.names = FALSE)
+
+lungoption1tidy_cfu_meta_joined
+```
+
+
+## Calculate CFUs from best dilution/Estimate bacterial load for each sample based on good dilution
+```{r}
+# Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
+
+meta <- read_excel(path, sheet = "metadata")
+
+tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
+  group_by(group) %>% 
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.5) %>%
+  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, day, dilution, sex, 
+         CFUs, CFUs_whole) %>% 
+  ungroup()
+
+
+tidy_cfu_meta_joined
+
+```
+
+
+```{r}
+# USE FOR INDIVIDUAL DAYS
+# female_df <- tidy_cfu_meta_joined %>%
+#   filter(sex == "female")
+# 
+# male_df <- tidy_cfu_meta_joined %>%
+#   filter(sex == "male")
+# 
+# # FEMALE ANOVA
+# female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
+# 
+# # Extract p-values from ANOVA
+# female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+# 
+# # Perform Tukey's post hoc test for group comparisons
+# female_tukey_result <- TukeyHSD(female_anova_result)
+# 
+# # Extract p-values from Tukey's test
+# female_p_values <- female_tukey_result[[1]][, "p adj"]
+# 
+# female_p_values
+# # Specify the pairs of groups for significance bars
+# female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+# female_significant_comparisons
+# 
+# # MALE ANOVA
+# male_anova_result <- aov(log10(CFUs_whole) ~ group, data = male_df)
+# 
+# # Extract p-values from ANOVA
+# male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+# 
+# # Perform Tukey's post hoc test for group comparisons
+# male_tukey_result <- TukeyHSD(male_anova_result)
+# 
+# # Extract p-values from Tukey's test
+# male_p_values <- male_tukey_result[[1]][, "p adj"]
+# 
+# 
+# # Specify the pairs of groups for significance bars
+# male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+# male_significant_comparisons
+
+```
+
+
+```{r}
+# USE FOR INDIVIDUAL DAYS
+# female_combined_df <- as.data.frame(female_p_values) %>%
+#   rownames_to_column("group") %>%
+#   left_join(as.data.frame(female_significant_comparisons) %>%
+#               rownames_to_column("group"), by = "group")
+# female_combined_df
+# 
+# male_combined_df <- as.data.frame(male_p_values) %>%
+#   rownames_to_column("group") %>%
+#   left_join(as.data.frame(male_significant_comparisons) %>%
+#               rownames_to_column("group"), by = "group")
+# male_combined_df
+# 
+# left_join(female_combined_df, male_combined_df, by = "group")
+```
+
+```{r}
+# Filter data for day 14
+df_day_14 <- tidy_cfu_meta_joined %>% 
+              filter(day == 14)
+
+# Separate by sex for day 14
+df_day_14_male <- df_day_14 %>% 
+                  filter(sex == "male")
+
+df_day_14_female <- df_day_14 %>% 
+                    filter(sex == "female")
+
+# Filter data for day 56
+df_day_56 <- tidy_cfu_meta_joined %>% 
+              filter(day == 56)
+
+# Separate by sex for day 56
+df_day_56_male <- df_day_56 %>% 
+                  filter(sex == "male")
+
+df_day_56_female <- df_day_56 %>% 
+                    filter(sex == "female")
+
+# Filter data for day 90
+df_day_90 <- tidy_cfu_meta_joined %>% 
+              filter(day == 90)
+
+# Separate by sex for day 90
+df_day_90_male <- df_day_90 %>% 
+                  filter(sex == "male")
+
+df_day_90_female <- df_day_90 %>% 
+                    filter(sex == "female")
+```
+
+```{r}
+# Day+sex T.test
+
+# Perform t-test between treatment and saline groups
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_male, subset = group %in% c("BCG", "Saline"))
+
+# Extract p-value from t-test result
+p_value_t_test <- t_test_result$p.value
+
+# Print the p-value
+print(p_value_t_test)
+
+# Perform t-test between treatment and saline groups
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_male, subset = group %in% c("ID93+GLA-SE", "Saline"))
+
+# Extract p-value from t-test result
+p_value_t_test <- t_test_result$p.value
+
+# Print the p-value
+print(p_value_t_test)
+
+# Perform t-test between treatment and saline groups
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_male, subset = group %in% c("BCG-ID93+GLA-SE", "Saline"))
+
+# Extract p-value from t-test result
+p_value_t_test <- t_test_result$p.value
+
+# Print the p-value
+print(p_value_t_test)
+```
+
+
+```{r}
+# Day T.test
+
+# Perform t-test between treatment and saline groups
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_56, subset = group %in% c("BCG", "Saline"))
+
+# Extract p-value from t-test result
+p_value_t_test <- t_test_result$p.value
+
+# Print the p-value
+print(p_value_t_test)
+
+# Perform t-test between treatment and saline groups
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_56, subset = group %in% c("ID93+GLA-SE", "Saline"))
+
+# Extract p-value from t-test result
+p_value_t_test <- t_test_result$p.value
+
+# Print the p-value
+print(p_value_t_test)
+
+# Perform t-test between treatment and saline groups
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_56, subset = group %in% c("BCG-ID93+GLA-SE", "Saline"))
+
+# Extract p-value from t-test result
+p_value_t_test <- t_test_result$p.value
+
+# Print the p-value
+print(p_value_t_test)
+
+```
+
+
+
+```{r fig.width=5}
+ggplot(tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  facet_wrap(~ sex) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Base Period Lung CFU") +
+  ylim(4.5, 6.5)
+
+```
+
+
