@@ -1,0 +1,88 @@
+"organ","count_date","day","who_plated","who_counted","group","sex","mouse","dilution","CFUs","CFUs_whole"
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","F","1",4,43,19545454.5454545
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","F","1",6,57,2590909090.90909
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","F","1",3,93,4227272.72727273
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","M","1",5,12,54545454.5454545
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","M","1",6,44,2e+09
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","M","1",4,78,35454545.4545455
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","F","2",5,17,77272727.2727273
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","F","2",5,89,404545454.545455
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","M","2",5,43,195454545.454545
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","M","2",6,86,3909090909.09091
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","M","2",4,76,34545454.5454545
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","F","3",5,22,1e+08
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","F","3",6,70,3181818181.81818
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","F","3",5,82,372727272.727273
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","M","3",5,53,240909090.909091
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","M","3",5,94,427272727.272727
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","M","3",3,42,1909090.90909091
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","F","4",4,48,21818181.8181818
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","F","4",6,43,1954545454.54545
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","F","4",4,35,15909090.9090909
+"lung","""April 6 2023""","14","AH_FA","Forrest","Saline","M","4",5,13,59090909.0909091
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","Saline","M","4",5,95,431818181.818182
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","Saline","M","4",5,36,163636363.636364
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","F","1",4,27,12272727.2727273
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","F","1",5,52,236363636.363636
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG","F","1",3,86,3909090.90909091
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","M","1",4,17,7727272.72727273
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","M","1",5,81,368181818.181818
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG","M","1",4,42,19090909.0909091
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","F","2",5,10,45454545.4545455
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","F","2",4,30,13636363.6363636
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","M","2",4,28,12727272.7272727
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","M","2",5,99,4.5e+08
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG","M","2",3,89,4045454.54545455
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","F","3",5,2,9090909.09090909
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","F","3",4,99,4.5e+07
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG","F","3",3,42,1909090.90909091
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","M","3",4,7,3181818.18181818
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","M","3",5,94,427272727.272727
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG","M","3",4,77,3.5e+07
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","F","4",6,27,1227272727.27273
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG","F","4",3,57,2590909.09090909
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG","M","4",4,25,11363636.3636364
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG","M","4",6,38,1727272727.27273
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","F","1",4,39,17727272.7272727
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","F","1",6,32,1454545454.54545
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","F","1",4,72,32727272.7272727
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","M","1",5,18,81818181.8181818
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","M","1",6,49,2227272727.27273
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","M","1",4,50,22727272.7272727
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","F","2",5,19,86363636.3636364
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","F","2",6,43,1954545454.54545
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","F","2",4,92,41818181.8181818
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","M","2",6,2,90909090.9090909
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","M","2",6,49,2227272727.27273
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","M","2",5,24,109090909.090909
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","F","3",4,33,1.5e+07
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","F","3",6,27,1227272727.27273
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","F","3",5,88,4e+08
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","M","3",4,30,13636363.6363636
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","M","3",6,41,1863636363.63636
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","M","3",5,24,109090909.090909
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","F","4",4,29,13181818.1818182
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","F","4",5,72,327272727.272727
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","F","4",4,42,19090909.0909091
+"lung","""April 6 2023""","14","AH_FA","Forrest","ID93+GLA-SE","M","4",4,29,13181818.1818182
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","ID93+GLA-SE","M","4",6,57,2590909090.90909
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","ID93+GLA-SE","M","4",4,35,15909090.9090909
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","F","1",4,30,13636363.6363636
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","F","1",5,68,309090909.090909
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG-ID93+GLA-SE","F","1",3,63,2863636.36363636
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","M","1",4,1,454545.454545455
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","M","1",5,46,209090909.090909
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG-ID93+GLA-SE","M","1",4,35,15909090.9090909
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","F","2",4,79,35909090.9090909
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","F","2",5,43,195454545.454545
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","M","2",4,14,6363636.36363636
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","M","2",5,89,404545454.545455
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG-ID93+GLA-SE","M","2",4,36,16363636.3636364
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","F","3",5,88,4e+08
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","M","3",4,11,5e+06
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","M","3",5,78,354545454.545455
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG-ID93+GLA-SE","M","3",3,54,2454545.45454545
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","F","4",3,3,136363.636363636
+"lung","""July 11 2023""","56","AH_FL","A. Hitpas","BCG-ID93+GLA-SE","F","4",5,52,236363636.363636
+"lung","""April 6 2023""","14","AH_FA","Forrest","BCG-ID93+GLA-SE","M","4",4,6,2727272.72727273
+"lung","""June 27 2023""","90","AH_FL","T.Dutt","BCG-ID93+GLA-SE","M","4",4,22,1e+07

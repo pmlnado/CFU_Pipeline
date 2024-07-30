@@ -63,7 +63,7 @@ library(ggpubr)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Option1/IMPACTB_CFU_Op1_AllDays_Lung.xlsx")
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Base/IMPACTB_CFU_Base_AllDays_Lung.xlsx")
 
 
 sheet_names <- excel_sheets(path)
@@ -181,7 +181,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
   dplyr::select(organ, count_date, day, who_plated, who_counted, group, sex, mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -194,7 +194,7 @@ lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 
 lungoption1tidy_cfu_meta_joined 
 
-write.csv(lungoption1tidy_cfu_meta_joined, "lungoption1tidy_cfu_meta_joined.csv", row.names = FALSE)
+write.csv(lungoption1tidy_cfu_meta_joined, "lungbasetidy_cfu_meta_joined.csv", row.names = FALSE)
 
 lungoption1tidy_cfu_meta_joined
 ```
@@ -407,7 +407,7 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
   theme(strip.text = element_text(size=16, face = "bold")) +
   labs (y="Log10 CFU") +
   ggtitle("Base Period Lung CFU") +
-  ylim(4.5, 6.5)
+  ylim(4.5, 10)
 
 ```
 
