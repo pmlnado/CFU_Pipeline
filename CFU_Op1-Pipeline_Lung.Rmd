@@ -208,7 +208,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.5) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, day, dilution, sex, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -406,9 +406,34 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=16, face="bold")) + 
   theme(strip.text = element_text(size=16, face = "bold")) +
   labs (y="Log10 CFU") +
-  ggtitle("Base Period Lung CFU") +
+  ggtitle("Option 1 Lung CFU") +
   ylim(4.5, 6.5)
 
+
+ggplot(tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4.5, 6.5)
 ```
 
 
