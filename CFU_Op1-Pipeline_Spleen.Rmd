@@ -193,7 +193,7 @@ spleenoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 
 spleenoption1tidy_cfu_meta_joined
 
-write.csv(spleenoption1tidy_cfu_meta_joined, "spleenoption1tidy_cfu_meta_joined", row.names = FALSE)
+write.csv(spleenoption1tidy_cfu_meta_joined, "spleenoption1tidy_cfu_meta_joined.csv", row.names = FALSE)
 
 # Print the dataframe
 spleenoption1tidy_cfu_meta_joined
