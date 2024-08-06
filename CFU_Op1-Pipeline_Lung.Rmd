@@ -265,10 +265,10 @@ male_significant_comparisons
 ```{r}
 #USE FOR INDIVIDUAL DAYS
 female_df <- tidy_cfu_meta_joined %>%
-  filter(sex == "female" & day == "56")
+  filter(sex == "female" & day == "90")
 
 male_df <- tidy_cfu_meta_joined %>%
-  filter(sex == "male" & day == "56")
+  filter(sex == "male" & day == "90")
 
 # FEMALE ANOVA
 female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
@@ -308,10 +308,10 @@ male_significant_comparisons
 ```{r}
 #USE FOR INDIVIDUAL DAYS
 female_df <- tidy_cfu_meta_joined %>%
-  filter(sex == "female" & day == "90")
+  filter(sex == "female" & day == "14")
 
 male_df <- tidy_cfu_meta_joined %>%
-  filter(sex == "male" & day == "90")
+  filter(sex == "male" & day == "14")
 
 # FEMALE ANOVA
 female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
@@ -405,7 +405,7 @@ df_day_90_female <- df_day_90 %>%
 # Day+sex T.test
 
 # Perform t-test between treatment and saline groups
-t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_male, subset = group %in% c("BCG", "Saline"))
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_female, subset = group %in% c("BCG", "Saline"))
 
 # Extract p-value from t-test result
 p_value_t_test <- t_test_result$p.value
@@ -414,7 +414,7 @@ p_value_t_test <- t_test_result$p.value
 print(p_value_t_test)
 
 # Perform t-test between treatment and saline groups
-t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_male, subset = group %in% c("ID93+GLA-SE", "Saline"))
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_female, subset = group %in% c("ID93+GLA-SE", "Saline"))
 
 # Extract p-value from t-test result
 p_value_t_test <- t_test_result$p.value
@@ -423,7 +423,7 @@ p_value_t_test <- t_test_result$p.value
 print(p_value_t_test)
 
 # Perform t-test between treatment and saline groups
-t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_male, subset = group %in% c("BCG-ID93+GLA-SE", "Saline"))
+t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_female, subset = group %in% c("BCG-ID93+GLA-SE", "Saline"))
 
 # Extract p-value from t-test result
 p_value_t_test <- t_test_result$p.value
@@ -519,6 +519,63 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
   labs (y="Log10 CFU") +
   ggtitle("Option 1 Lung CFU") +
   ylim(4.5, 6.5)
+
+lungoption1tidy_cfu_meta_joined
 ```
 
+```{r}
+ggplot(lungoption1tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  facet_wrap(~ sex) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4.5, 6.5)
+
+
+ggplot(lungoption1tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4.5, 6.5)
+
+
+```
 
