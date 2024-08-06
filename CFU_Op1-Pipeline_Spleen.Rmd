@@ -219,48 +219,133 @@ tidy_cfu_meta_joined
 
 
 ```{r}
-# USE FOR INDIVIDUAL DAYS
-# female_df <- tidy_cfu_meta_joined %>%
-#   filter(sex == "female")
-# 
-# male_df <- tidy_cfu_meta_joined %>%
-#   filter(sex == "male")
-# 
-# # FEMALE ANOVA
-# female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
-# 
-# # Extract p-values from ANOVA
-# female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
-# 
-# # Perform Tukey's post hoc test for group comparisons
-# female_tukey_result <- TukeyHSD(female_anova_result)
-# 
-# # Extract p-values from Tukey's test
-# female_p_values <- female_tukey_result[[1]][, "p adj"]
-# 
-# female_p_values
-# # Specify the pairs of groups for significance bars
-# female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
-# female_significant_comparisons
-# 
-# # MALE ANOVA
-# male_anova_result <- aov(log10(CFUs_whole) ~ group, data = male_df)
-# 
-# # Extract p-values from ANOVA
-# male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
-# 
-# # Perform Tukey's post hoc test for group comparisons
-# male_tukey_result <- TukeyHSD(male_anova_result)
-# 
-# # Extract p-values from Tukey's test
-# male_p_values <- male_tukey_result[[1]][, "p adj"]
-# 
-# 
-# # Specify the pairs of groups for significance bars
-# male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
-# male_significant_comparisons
+#USE FOR INDIVIDUAL DAYS
+female_df <- tidy_cfu_meta_joined %>%
+  filter(sex == "female" & day == "14")
+
+male_df <- tidy_cfu_meta_joined %>%
+  filter(sex == "male" & day == "14")
+
+# FEMALE ANOVA
+female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
+
+# Extract p-values from ANOVA
+female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+female_tukey_result <- TukeyHSD(female_anova_result)
+
+# Extract p-values from Tukey's test
+female_p_values <- female_tukey_result[[1]][, "p adj"]
+
+# Specify the pairs of groups for significance bars
+female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+female_significant_comparisons
+
+# MALE ANOVA
+male_anova_result <- aov(log10(CFUs_whole) ~ group, data = male_df)
+
+# Extract p-values from ANOVA
+male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+male_tukey_result <- TukeyHSD(male_anova_result)
+
+# Extract p-values from Tukey's test
+male_p_values <- male_tukey_result[[1]][, "p adj"]
+
+
+# Specify the pairs of groups for significance bars
+male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+male_significant_comparisons
 
 ```
+
+```{r}
+#USE FOR INDIVIDUAL DAYS
+female_df <- tidy_cfu_meta_joined %>%
+  filter(sex == "female" & day == "56")
+
+male_df <- tidy_cfu_meta_joined %>%
+  filter(sex == "male" & day == "56")
+
+# FEMALE ANOVA
+female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
+
+# Extract p-values from ANOVA
+female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+female_tukey_result <- TukeyHSD(female_anova_result)
+
+# Extract p-values from Tukey's test
+female_p_values <- female_tukey_result[[1]][, "p adj"]
+
+# Specify the pairs of groups for significance bars
+female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+female_significant_comparisons
+
+# MALE ANOVA
+male_anova_result <- aov(log10(CFUs_whole) ~ group, data = male_df)
+
+# Extract p-values from ANOVA
+male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+male_tukey_result <- TukeyHSD(male_anova_result)
+
+# Extract p-values from Tukey's test
+male_p_values <- male_tukey_result[[1]][, "p adj"]
+
+
+# Specify the pairs of groups for significance bars
+male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+male_significant_comparisons
+
+```
+
+```{r}
+#USE FOR INDIVIDUAL DAYS
+female_df <- tidy_cfu_meta_joined %>%
+  filter(sex == "female" & day == "90")
+
+male_df <- tidy_cfu_meta_joined %>%
+  filter(sex == "male" & day == "90")
+
+# FEMALE ANOVA
+female_anova_result <- aov(log10(CFUs_whole) ~ group, data = female_df)
+
+# Extract p-values from ANOVA
+female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+female_tukey_result <- TukeyHSD(female_anova_result)
+
+# Extract p-values from Tukey's test
+female_p_values <- female_tukey_result[[1]][, "p adj"]
+
+# Specify the pairs of groups for significance bars
+female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+female_significant_comparisons
+
+# MALE ANOVA
+male_anova_result <- aov(log10(CFUs_whole) ~ group, data = male_df)
+
+# Extract p-values from ANOVA
+male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+male_tukey_result <- TukeyHSD(male_anova_result)
+
+# Extract p-values from Tukey's test
+male_p_values <- male_tukey_result[[1]][, "p adj"]
+
+
+# Specify the pairs of groups for significance bars
+male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+male_significant_comparisons
+```
+
 
 
 ```{r}
