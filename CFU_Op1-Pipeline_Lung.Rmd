@@ -199,7 +199,7 @@ lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 
 lungoption1tidy_cfu_meta_joined 
 
-write.csv(lungoption1tidy_cfu_meta_joined, "lungoption1tidy_cfu_meta_joined.csv", row.names = FALSE)
+write.csv(lungoption1tidy_cfu_meta_joined, "lungoption1tidy50_cfu_meta_joined.csv", row.names = FALSE)
 
 lungoption1tidy_cfu_meta_joined
 ```
@@ -219,7 +219,7 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   ungroup()
 
 
-tidy_cfu_meta_joined %>% group_by(sex)
+tidy_cfu_meta_joined
 
 ```
 
