@@ -61,14 +61,19 @@ library(ggplot2)
 library(ggpubr)
 ```
 
+
 ```{r}
 #Replace w/ path to CFU sheet
 path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Option1/IMPACTB_CFU_Op1_AllDays_Lung.xlsx")
+```
 
 
+```{r}
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
+```
 
+```{r}
 merged_data <- list()
 
 for(i in 1:length(sheet_names)){
