@@ -1,0 +1,549 @@
+---
+title: "Svx D90 CFUs"
+author:
+- name: Pablo Maldonado
+  affiliation: Colorado State University
+date: '2023-08-17'
+output:
+  html_document: default
+  word_document: default
+subtitle: Innate Immunity Pilot
+---
+
+```{r global options, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE, error = FALSE, message = FALSE, warning = FALSE)
+```
+
+## Data description
+
+The data are collected in a spreadsheet with multiple sheets. The first sheet
+(named "[x]") is used to record some metadata for the experiment, while the 
+following sheets are used to record CFUs counts from the plates used for samples
+from each organ, with one sheet per organ. For example, if you plated data
+from both the lung and spleen, there would be three sheets in the file: one 
+with the metadata, one with the plate counts for the lung, and one with the
+plate counts for the spleen. 
+
+The metadata sheet is used to record information about the overall process of
+plating the data. Values from this sheet will be used in calculating the bacterial
+load in the original sample based on the CFU counts. This spreadsheet includes
+the following columns: 
+
+- `organ`: Include one row for each organ that was plated in the experiment. 
+You should name the organ all in lowercase (e.g., "lung", "spleen"). You 
+should use the same name to also name the sheet that records data for that organ
+for example, if you have rows in the metadata sheet for "lung" and "spleen", 
+then you should have two other sheets in the file, one sheet named "lung" and 
+one named "spleen", which you'll use to store the plate counts for each of those
+organs.
+- `prop_resuspended`: In this column, give the proportion of that organ that 
+was plated. For example, if you plated half the lung, then in the "lung" row
+of this spread sheet, you should put 0.5 in the `prop_resuspended` column. 
+- `total_resuspended_uL`: This column contains an original volume of tissue homogenate. 
+For example, raw lung tissue is homogenized in 500 uL of PBS in a tube containing metal beads. 
+- `og_aliquot_uL`: 100 uL of th total_resuspended slurry would be considered an original 
+aliquot and is used to peform serial dilutions.
+- `dilution_factor`: Amount of the original stock solution that is present in the total solution, 
+after dilution(s)
+- `plated_uL`: Amount of suspension + diluent plated on section of solid agar 
+
+## Read in data
+
+```{r}
+library(readxl)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(stringr)
+library(tidyverse)
+library(gridExtra)
+library(ggplot2)
+library(ggpubr)
+```
+#Replace w/ path to CFU sheet
+
+```{r}
+path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Option1/cfu_revised_MHT.xlsx")
+```
+
+
+```{r}
+sheet_names <- excel_sheets(path)
+```
+
+
+```{r}
+merged_data <- list()
+
+for(i in 1:length(sheet_names)){
+  data <- read_excel(path, sheet = sheet_names[i]) %>% 
+    mutate(organ = paste0(sheet_names[i]))
+merged_data[[i]] <- data
+}
+  
+all_data <- bind_rows(merged_data, .id = "column_label") %>% 
+    dplyr::select(-column_label)
+  
+all_data
+```
+
+```{r}
+# #Replace w/ path to CFU sheet
+# all_data <- read_excel("/Users/PabloM/Downloads/cfu_revised_MHT.xlsx")
+# 
+# all_data
+```
+
+
+
+
+## Exploratory analysis and quality checks
+
+### Exploratory analysis
+
+**Dimensions of input data:**
+
+Based on the input data, data were collected for the following organ or 
+organs: 
+
+The following number of mice were included for each: 
+
+The following number of replicates were recorded at each count date for 
+each experimental group: 
+
+The following number of dilutions and dilution level were recorded for 
+each organ: 
+
+**People who plated and collected the data. Date or dates of counting:**
+
+Based on the input data, the plates included in these data were counted by 
+the following person or persons: 
+Based on the input data, the plates included in these data were counted on 
+the following date or dates: 
+
+```{r}
+all_data$Groups = factor(all_data$Groups, levels = c("Saline", "BCG", "ID93", "BCG+ID93"))
+
+all_data <- all_data %>%
+  mutate(Groups = recode(Groups,
+                         "ID93" = "ID93+GLA-SE",
+                         "BCG+ID93" = "BCG-ID93+GLA-SE"))
+all_data
+
+```
+
+
+
+## Calculate CFUs from best dilution/Estimate bacterial load for each sample based on good dilution
+```{r}
+
+tidy_cfu_meta_joined <- all_data
+
+
+tidy_cfu_meta_joined
+
+```
+```{r}
+# Perform two-way ANOVA
+anova_result <- aov(log10(CFU) ~ Groups, data = tidy_cfu_meta_joined %>% filter(Time_point == "90_DPI"))
+
+# Summary of the two-way ANOVA
+summary(anova_result)
+
+# Perform Tukey's HSD test
+tukey_result <- TukeyHSD(anova_result)
+
+# Print Tukey's HSD test results
+print(tukey_result)
+
+
+# Load necessary libraries
+library(ggplot2)
+
+# Interaction plot
+interaction.plot <- ggplot(tidy_cfu_meta_joined %>% filter(Time_point == "14_DPI"),
+                           aes(x = Groups, y = log10(CFU), color = Sex, group = Sex)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +
+  labs(title = "Sex Differences Between Groups 14_DPI",
+       x = "Groups",
+       y = "log10(CFU)") +
+  theme_minimal()
+
+print(interaction.plot)
+
+
+```
+
+
+```{r}
+#USE FOR INDIVIDUAL DAYS
+female_df <- tidy_cfu_meta_joined %>%
+  filter(Sex == "Female" & Time_point == "14_DPI")
+
+male_df <- tidy_cfu_meta_joined %>%
+  filter(Sex == "Male" & Time_point == "14_DPI")
+
+# FEMALE ANOVA
+female_anova_result <- aov(log10(CFU) ~ Groups, data = female_df)
+
+# Extract p-values from ANOVA
+female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+female_tukey_result <- TukeyHSD(female_anova_result)
+
+# Extract p-values from Tukey's test
+female_p_values <- female_tukey_result[[1]][, "p adj"]
+
+# Specify the pairs of groups for significance bars
+female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+
+
+# MALE ANOVA
+male_anova_result <- aov(log10(CFU) ~ Groups, data = male_df)
+
+# Extract p-values from ANOVA
+male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+male_tukey_result <- TukeyHSD(male_anova_result)
+
+# Extract p-values from Tukey's test
+male_p_values <- male_tukey_result[[1]][, "p adj"]
+
+
+# Specify the pairs of groups for significance bars
+male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+
+
+
+
+female_p_values 
+female_significant_comparisons
+
+male_p_values
+male_significant_comparisons
+```
+
+```{r}
+female_df <- tidy_cfu_meta_joined %>%
+  filter(Sex == "Female" & Time_point == "56_DPI")
+
+male_df <- tidy_cfu_meta_joined %>%
+  filter(Sex == "Male" & Time_point == "56_DPI")
+
+# FEMALE ANOVA
+female_anova_result <- aov(log10(CFU) ~ Groups, data = female_df)
+
+# Extract p-values from ANOVA
+female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+female_tukey_result <- TukeyHSD(female_anova_result)
+
+# Extract p-values from Tukey's test
+female_p_values <- female_tukey_result[[1]][, "p adj"]
+
+# Specify the pairs of groups for significance bars
+female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+female_significant_comparisons
+
+# MALE ANOVA
+male_anova_result <- aov(log10(CFU) ~ Groups, data = male_df)
+
+# Extract p-values from ANOVA
+male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+male_tukey_result <- TukeyHSD(male_anova_result)
+
+# Extract p-values from Tukey's test
+male_p_values <- male_tukey_result[[1]][, "p adj"]
+
+
+# Specify the pairs of groups for significance bars
+male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+male_significant_comparisons
+
+female_p_values 
+male_p_values
+
+```
+
+```{r}
+female_df <- tidy_cfu_meta_joined %>%
+  filter(Sex == "Female" & Time_point == "90_DPI")
+
+male_df <- tidy_cfu_meta_joined %>%
+  filter(Sex == "Male" & Time_point == "90_DPI")
+
+# FEMALE ANOVA
+female_anova_result <- aov(log10(CFU) ~ Groups, data = female_df)
+
+# Extract p-values from ANOVA
+female_p_values <- summary(female_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+female_tukey_result <- TukeyHSD(female_anova_result)
+
+# Extract p-values from Tukey's test
+female_p_values <- female_tukey_result[[1]][, "p adj"]
+
+# Specify the pairs of groups for significance bars
+female_significant_comparisons <- female_p_values < 0.05  # Example: using a significance level of 0.05
+female_significant_comparisons
+
+# MALE ANOVA
+male_anova_result <- aov(log10(CFU) ~ Groups, data = male_df)
+
+# Extract p-values from ANOVA
+male_p_values <- summary(male_anova_result)[["Pr(>F)"]]
+
+# Perform Tukey's post hoc test for group comparisons
+male_tukey_result <- TukeyHSD(male_anova_result)
+
+# Extract p-values from Tukey's test
+male_p_values <- male_tukey_result[[1]][, "p adj"]
+
+
+# Specify the pairs of groups for significance bars
+male_significant_comparisons <- male_p_values < 0.05  # Example: using a significance level of 0.05
+male_significant_comparisons
+
+female_p_values 
+male_p_values
+```
+
+
+
+```{r}
+# USE FOR INDIVIDUAL DAYS
+# female_combined_df <- as.data.frame(female_p_values) %>%
+#   rownames_to_column("group") %>%
+#   left_join(as.data.frame(female_significant_comparisons) %>%
+#               rownames_to_column("group"), by = "group")
+# female_combined_df
+# 
+# male_combined_df <- as.data.frame(male_p_values) %>%
+#   rownames_to_column("group") %>%
+#   left_join(as.data.frame(male_significant_comparisons) %>%
+#               rownames_to_column("group"), by = "group")
+# male_combined_df
+# 
+# left_join(female_combined_df, male_combined_df, by = "group")
+```
+
+```{r}
+# # Filter data for day 14
+# df_day_14 <- tidy_cfu_meta_joined %>% 
+#               filter(day == 14)
+# 
+# # Separate by sex for day 14
+# df_day_14_male <- df_day_14 %>% 
+#                   filter(sex == "male")
+# 
+# df_day_14_female <- df_day_14 %>% 
+#                     filter(sex == "female")
+# 
+# # Filter data for day 56
+# df_day_56 <- tidy_cfu_meta_joined %>% 
+#               filter(day == 56)
+# 
+# # Separate by sex for day 56
+# df_day_56_male <- df_day_56 %>% 
+#                   filter(sex == "male")
+# 
+# df_day_56_female <- df_day_56 %>% 
+#                     filter(sex == "female")
+# 
+# # Filter data for day 90
+# df_day_90 <- tidy_cfu_meta_joined %>% 
+#               filter(day == 90)
+# 
+# # Separate by sex for day 90
+# df_day_90_male <- df_day_90 %>% 
+#                   filter(sex == "male")
+# 
+# df_day_90_female <- df_day_90 %>% 
+#                     filter(sex == "female")
+# ```
+# 
+# ```{r}
+# # Day+sex T.test
+# 
+# # Perform t-test between treatment and saline groups
+# t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_female, subset = group %in% c("BCG", "Saline"))
+# 
+# # Extract p-value from t-test result
+# p_value_t_test <- t_test_result$p.value
+# 
+# # Print the p-value
+# print(p_value_t_test)
+# 
+# # Perform t-test between treatment and saline groups
+# t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_female, subset = group %in% c("ID93+GLA-SE", "Saline"))
+# 
+# # Extract p-value from t-test result
+# p_value_t_test <- t_test_result$p.value
+# 
+# # Print the p-value
+# print(p_value_t_test)
+# 
+# # Perform t-test between treatment and saline groups
+# t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_14_female, subset = group %in% c("BCG-ID93+GLA-SE", "Saline"))
+# 
+# # Extract p-value from t-test result
+# p_value_t_test <- t_test_result$p.value
+# 
+# # Print the p-value
+# print(p_value_t_test)
+# ```
+# 
+# 
+# ```{r}
+# # Day T.test
+# 
+# # Perform t-test between treatment and saline groups
+# t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_56, subset = group %in% c("BCG", "Saline"))
+# 
+# # Extract p-value from t-test result
+# p_value_t_test <- t_test_result$p.value
+# 
+# # Print the p-value
+# print(p_value_t_test)
+# 
+# # Perform t-test between treatment and saline groups
+# t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_56, subset = group %in% c("ID93+GLA-SE", "Saline"))
+# 
+# # Extract p-value from t-test result
+# p_value_t_test <- t_test_result$p.value
+# 
+# # Print the p-value
+# print(p_value_t_test)
+# 
+# # Perform t-test between treatment and saline groups
+# t_test_result <- t.test(log10(CFUs_whole) ~ group, data = df_day_56, subset = group %in% c("BCG-ID93+GLA-SE", "Saline"))
+# 
+# # Extract p-value from t-test result
+# p_value_t_test <- t_test_result$p.value
+# 
+# # Print the p-value
+# print(p_value_t_test)
+
+```
+
+
+
+```{r fig.width=5}
+ggplot(tidy_cfu_meta_joined, aes(x = Time_point, y = log10(CFU), fill = Groups, color = Groups)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = Groups), alpha = 0.3) + 
+  facet_wrap(~ Sex) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4, 8)
+
+
+ggplot(tidy_cfu_meta_joined, aes(x = Time_point, y = log10(CFU), fill = Groups, color = Groups)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = Groups), alpha = 0.3) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4, 8)
+
+```
+
+```{r}
+ggplot(lungoption1tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  facet_wrap(~ sex) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4.5, 6.5)
+
+
+ggplot(lungoption1tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
+geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
+           cex = 1.5, position = position_dodge(width = .75)) + 
+  geom_boxplot(aes(fill = group), alpha = 0.3) + 
+  scale_fill_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) + 
+  scale_color_manual(values = c("red2", "olivedrab3", "green4",  "deepskyblue")) +
+  theme_bw() + 
+  theme(
+        #axis.text.x = element_blank(), # Remove X-axis names
+        axis.title.x = element_blank(),   
+        axis.text.x = element_text(size = 12),
+        #axis.title.x = element_text(size = 12, face = "bold"),
+        #axis.text.y = element_blank(), # Remove axis names
+        #axis.title.y = element_blank(), 
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.text = element_text(size = 10), 
+        legend.title = element_text(size = 10), 
+        legend.key.size = unit(1, 'cm'), 
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+  labs (y="Log10 CFU") +
+  ggtitle("Option 1 Lung CFU") +
+  ylim(4.5, 6.5)
+
+
+```
+
