@@ -164,9 +164,9 @@ tidy_cfu_data <- all_data %>%
   mutate(dilution = str_extract(dilution, "[0-9]+"),
          dilution = as.numeric(dilution)) %>%
   mutate(CFUs = as.numeric(CFUs)) %>%
-  filter(CFUs >= 1, CFUs <= 100) %>%
+  filter(CFUs >= 1, CFUs <= 150) %>%
   group_by(group, mouse, organ, sex, day) %>%
-  slice(which.min(ifelse(CFUs >= 1 & CFUs <= 100, dilution, Inf))) %>%
+  slice(which.min(ifelse(CFUs >= 1 & CFUs <= 150, dilution, Inf))) %>%
   ungroup()
 
 tidy_cfu_data
@@ -181,7 +181,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 lungoption1tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/(0.50)) %>%
   dplyr::select(organ, count_date, day, who_plated, who_counted, group, sex, mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -214,7 +214,7 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   ungroup()
 
 
-tidy_cfu_meta_joined
+tidy_cfu_meta_joined %>% group_by(sex)
 
 ```
 
