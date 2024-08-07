@@ -213,7 +213,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, day, dilution, sex, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -221,6 +221,21 @@ tidy_cfu_meta_joined <- inner_join(meta, tidy_cfu_data) %>%
 
 tidy_cfu_meta_joined
 
+```
+
+
+```{r}
+# Perform two-way ANOVA
+anova_result <- aov(log10(CFUs_whole) ~ group, data = tidy_cfu_meta_joined %>% filter(day == "14"))
+
+# Summary of the two-way ANOVA
+summary(anova_result)
+
+# Perform Tukey's HSD test
+tukey_result <- TukeyHSD(anova_result)
+
+# Print Tukey's HSD test results
+print(tukey_result)
 ```
 
 
@@ -472,7 +487,7 @@ print(p_value_t_test)
 
 
 
-```{r fig.width=5}
+```{r}
 ggplot(tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
@@ -496,8 +511,8 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=16, face="bold")) + 
   theme(strip.text = element_text(size=16, face = "bold")) +
   labs (y="Log10 CFU") +
-  ggtitle("Option 1 Lung CFU") +
-  ylim(4.5, 6.5)
+  ggtitle("Option 1 Lung CFU 33%") +
+  ylim(4, 7)
 
 
 ggplot(tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
@@ -522,8 +537,8 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=16, face="bold")) + 
   theme(strip.text = element_text(size=16, face = "bold")) +
   labs (y="Log10 CFU") +
-  ggtitle("Option 1 Lung CFU") +
-  ylim(4.5, 6.5)
+  ggtitle("Option 1 Lung CFU 33%") +
+  ylim(4, 7)
 
 lungoption1tidy_cfu_meta_joined
 ```
@@ -552,8 +567,8 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=16, face="bold")) + 
   theme(strip.text = element_text(size=16, face = "bold")) +
   labs (y="Log10 CFU") +
-  ggtitle("Option 1 Lung CFU") +
-  ylim(4.5, 6.5)
+  ggtitle("Option 1 Lung CFU 50%") +
+  ylim(4, 7)
 
 
 ggplot(lungoption1tidy_cfu_meta_joined, aes(x = day, y = log10(CFUs_whole), fill = group, color = group)) +
@@ -578,8 +593,8 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         plot.title = element_text(color="black", size=16, face="bold")) + 
   theme(strip.text = element_text(size=16, face = "bold")) +
   labs (y="Log10 CFU") +
-  ggtitle("Option 1 Lung CFU") +
-  ylim(4.5, 6.5)
+  ggtitle("Option 1 Lung CFU 50%") +
+  ylim(4, 7)
 
 
 ```

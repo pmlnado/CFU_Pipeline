@@ -143,6 +143,8 @@ tidy_cfu_meta_joined <- all_data
 tidy_cfu_meta_joined
 
 ```
+
+
 ```{r}
 # Perform two-way ANOVA
 anova_result <- aov(log10(CFU) ~ Groups, data = tidy_cfu_meta_joined %>% filter(Time_point == "90_DPI"))
