@@ -141,7 +141,10 @@ all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG + So
 all_data <- all_data %>%
   mutate(group = recode(group,
                          "BCG + SolaVAX-IM-CpG 2x" = "BCG + SolaVAX-IM-CpG1018 2x",
-                         "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+                         "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018",
+                        "BCG 2x" = "BCG + BCG",
+                        "BCG 1x" = "BCG",
+                        "BCG + SolaVAX-IN-Laporte 2x" = "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
 
 
 all_data %>%
@@ -232,15 +235,25 @@ lungD90tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
 #   filter(!(mouse == "B" & group == "BCG 1x"))
 
-lungD90tidy_cfu_meta_joined 
-
-setwd("R:/RSTOR-HenaO_lab/Pablo/CFU_Pipeline")
-getwd()
-
-write.csv(lungD90tidy_cfu_meta_joined, "lungD90tidy_cfu_meta_joined.csv", row.names = FALSE)
+# lungD90tidy_cfu_meta_joined 
+# 
+# setwd("R:/RSTOR-HenaO_lab/Pablo/CFU_Pipeline")
+# getwd()
+# 
+# write.csv(lungD90tidy_cfu_meta_joined, "lungD90tidy_cfu_meta_joined.csv", row.names = FALSE)
 
 # Print the dataframe
 lungD90tidy_cfu_meta_joined
+
+
+tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+  dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
+
+tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+
+
+tidy_cfu_meta_joined %>%
+  distinct(group)
 ```
 
 
@@ -321,14 +334,14 @@ kable(comparison_df, caption = "Comparison Results", align = "c")
 
 
 
-
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
+# 
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
 
 
 ```
@@ -364,9 +377,9 @@ with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CF
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group)) +#, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
+    geom_boxplot(aes(fill = group), alpha = 0.3) + 
     scale_color_viridis_d(name = " ", alpha = 1) +  
   scale_fill_viridis_d(name = " ", alpha = 1) + 
-  geom_boxplot(aes(fill = group), alpha = 0.3) + 
   theme_minimal() + 
   theme(
         axis.text.x = element_blank(),
@@ -374,15 +387,20 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         axis.text.y = element_text(size = 16),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 16, face = "bold"),
-        legend.text = element_text(size = 12), 
+        legend.text = element_text(size = 10), 
         legend.title = element_text(size = 16), 
         legend.key.size = unit(1, 'cm'), 
         legend.position = ("right"),
-        plot.title = element_text(color="black", size=20, face="bold")) + 
-  theme(strip.text = element_text(size=24, face = "bold")) +
-labs (y="Log10 CFU", fill = "Vaccine") +
-  ggtitle("SolaVAX-TB 2x Boost Day 90 Lung CFU       Df:5") +
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+        scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) +
+  labs(y = "Total CFU Log10", x = "", fill = "Vaccine", color = "Vaccine") +
+  ggtitle("SolaVAX-TB 2x Boost Day 90") +
   ylim(4, 7)
+
+
+#Do not delete
+#df = 5
 ```
 
 
