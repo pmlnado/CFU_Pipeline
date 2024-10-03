@@ -67,7 +67,7 @@ library(kableExtra)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("//Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day30_cfu_numbers.xlsx")
+path <- c("R:\\RSTOR-HenaO_lab\\Pablo\\CFU_Pipeline\\SVX_Boost2X_Lung_Day30_cfu_numbers.xlsx")
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
@@ -139,7 +139,10 @@ all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG + So
 all_data <- all_data %>%
   mutate(group = recode(group,
                          "BCG + SolaVAX-IM-CpG 2x" = "BCG + SolaVAX-IM-CpG1018 2x",
-                         "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+                         "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018",
+                        "BCG 2x" = "BCG + BCG",
+                        "BCG 1x" = "BCG",
+                        "BCG + SolaVAX-IN-Laporte 2x" = "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
 
 
 all_data %>%
@@ -173,6 +176,7 @@ level in the data:
 #   ungroup()
 
 
+
 tidy_cfu_data <- all_data %>%
   mutate(dilution = str_extract(dilution, "[0-9]+"),
          dilution = as.numeric(dilution)) %>%
@@ -192,14 +196,13 @@ tidy_cfu_data <- all_data %>%
 ```
 
 
-## Calculate CFUs from best dilution/Estimate bacterial load for each sample based on good dilution
 ```{r}
 # Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
 meta <- read_excel(path, sheet = "metadata")
 
-lungD30tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.50) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -210,12 +213,47 @@ lungD30tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
 #   filter(!(mouse == "B" & group == "BCG 1x"))
 
-lungD30tidy_cfu_meta_joined 
+tidy_cfu_meta_joined 
+```
 
-write.csv(lungD30tidy_cfu_meta_joined, "lungD30tidy_cfu_meta_joined.csv", row.names = FALSE)
+
+## Calculate CFUs from best dilution/Estimate bacterial load for each sample based on good dilution
+```{r}
+# Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
+meta <- read_excel(path, sheet = "metadata")
+
+lungD30tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+  group_by(group) %>% 
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
+         CFUs, CFUs_whole) %>% 
+  ungroup()
+
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+# 
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "B" & group == "BCG 1x"))
+
+# lungD90tidy_cfu_meta_joined 
+# 
+# setwd("R:/RSTOR-HenaO_lab/Pablo/CFU_Pipeline")
+# getwd()
+# 
+# write.csv(lungD90tidy_cfu_meta_joined, "lungD90tidy_cfu_meta_joined.csv", row.names = FALSE)
 
 # Print the dataframe
 lungD30tidy_cfu_meta_joined
+
+
+tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+  dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
+
+tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+
+
+tidy_cfu_meta_joined %>%
+  distinct(group)
 ```
 
 
@@ -295,20 +333,20 @@ kable(comparison_df, caption = "Comparison Results", align = "c")
 # left_join(female_combined_df, male_combined_df, by = "group")
 
 
-
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
-with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
+# 
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
 
 
 ```
 
 
-```{r fig.width=5}
+```{r}
 # tidy_cfu_meta_joined %>%
 #   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group)) +
 #   geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", cex = 1.5, position = position_dodge(width = .75)) +
@@ -331,15 +369,12 @@ with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CF
 #   ylim(4, 7)
 
 # FILTERING GROUPS
-tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-  dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
-
 ggplot(tidy_cfu_meta_joined, aes(x = group, y = log10(CFUs_whole), fill = group)) +#, color = group)) +
 geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black", 
            cex = 1.5, position = position_dodge(width = .75)) + 
+    geom_boxplot(aes(fill = group), alpha = 0.3) + 
     scale_color_viridis_d(name = " ", alpha = 1) +  
   scale_fill_viridis_d(name = " ", alpha = 1) + 
-  geom_boxplot(aes(fill = group), alpha = 0.3) + 
   theme_minimal() + 
   theme(
         axis.text.x = element_blank(),
@@ -347,15 +382,16 @@ geom_point(size = 5, shape = 21, alpha = 0.8, na.rm = T, colour = "black",
         axis.text.y = element_text(size = 16),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 16, face = "bold"),
-        legend.text = element_text(size = 12), 
+        legend.text = element_text(size = 10), 
         legend.title = element_text(size = 16), 
         legend.key.size = unit(1, 'cm'), 
         legend.position = ("right"),
-        plot.title = element_text(color="black", size=20, face="bold")) + 
-  theme(strip.text = element_text(size=24, face = "bold")) +
-labs (y="Log10 CFU", fill = "Vaccine") +
-  ggtitle("SolaVAX-TB 2x Boost Day 30 Lung CFU       Df:5") +
-  ylim(4, 6.5)
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+        scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) +
+  labs(y = "Total CFU Log10", x = "", fill = "Vaccine", color = "Vaccine") +
+  ggtitle("SolaVAX-TB 2x Boost Day 30") +
+  ylim(4, 7)
 ```
 
 
