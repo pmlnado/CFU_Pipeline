@@ -151,6 +151,7 @@ all_data %>%
 
 ```
 
+
 **Distribution of CFUs at each dilution:**
 
 Here's a plot that shows how many plates were too numerous to count at each 
@@ -246,14 +247,57 @@ lungD30tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 lungD30tidy_cfu_meta_joined
 
 
-tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-  dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
-
-tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+# tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+#   dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
+# 
+# tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
 
 
 tidy_cfu_meta_joined %>%
   distinct(group)
+```
+```{r}
+library(knitr)
+library(broom)
+glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
+                  data = tidy_cfu_meta_joined, 
+                  family = quasipoisson)
+
+glm_summary <- tidy(glm_result)
+
+# Add significance stars based on p-value
+glm_summary$Significance <- with(glm_summary, 
+                                 ifelse(p.value < 0.001, "***", 
+                                        ifelse(p.value < 0.01, "**", 
+                                               ifelse(p.value < 0.05, "*", ""))))
+
+
+glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
+glm_summary$term <- gsub("\\(Intercept\\)", "BCG", glm_summary$term)
+
+
+glm_summary$term <- factor(glm_summary$term, 
+                           levels = c("Saline", 
+                                      "BCG", 
+                                      "BCG + BCG", 
+                                      "BCG + SolaVAX-IM-CpG1018 2x", 
+                                      "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", 
+                                      "BCG + SolaVAX-IM-AdVAX 2x", 
+                                      "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", 
+                                      "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+
+colnames(glm_summary) <- c("Coefficient", "Estimate", "SE", "Statistic", "p.value", "Significance")
+glm_summary <- glm_summary %>%
+  dplyr::select(-Statistic) %>%  
+  dplyr::filter(Coefficient != "BCG")
+
+
+glm_summary %>%
+  kable("html", caption = " ") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
+  row_spec(0, bold = TRUE, font_size = 12, color = "black") %>%  # Customize header text color to black
+  column_spec(1:ncol(glm_summary), 
+              extra_css = "white-space: nowrap; color: black;") 
 ```
 
 
