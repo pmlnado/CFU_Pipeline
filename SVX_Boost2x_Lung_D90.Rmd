@@ -246,74 +246,128 @@ lungD90tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
 lungD90tidy_cfu_meta_joined
 
 
-tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-  dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
-
-tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+# tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+#   dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
+# 
+# tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
 
 
 tidy_cfu_meta_joined %>%
   distinct(group)
 ```
 
+GLM
+
+```{r}
+library(knitr)
+library(broom)
+glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
+                  data = tidy_cfu_meta_joined, 
+                  family = quasipoisson)
+
+glm_summary <- tidy(glm_result)
+
+# Add significance stars based on p-value
+glm_summary$Significance <- with(glm_summary, 
+                                 ifelse(p.value < 0.001, "***", 
+                                        ifelse(p.value < 0.01, "**", 
+                                               ifelse(p.value < 0.05, "*", ""))))
+
+
+glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
+glm_summary$term <- gsub("\\(Intercept\\)", "BCG", glm_summary$term)
+
+
+glm_summary$term <- factor(glm_summary$term, 
+                           levels = c("Saline", 
+                                      "BCG", 
+                                      "BCG + BCG", 
+                                      "BCG + SolaVAX-IM-CpG1018 2x", 
+                                      "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", 
+                                      "BCG + SolaVAX-IM-AdVAX 2x", 
+                                      "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", 
+                                      "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+
+colnames(glm_summary) <- c("Coefficient", "Estimate", "SE", "Statistic", "p.value", "Significance")
+glm_summary <- glm_summary %>%
+  dplyr::select(-Statistic) %>%  
+  dplyr::filter(Coefficient != "BCG")
+
+
+glm_summary %>%
+  kable("html", caption = " ") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
+  row_spec(0, bold = TRUE, font_size = 12, color = "black") %>%  # Customize header text color to black
+  column_spec(1:ncol(glm_summary), 
+              extra_css = "white-space: nowrap; color: black;")  # Set all text to black and prevent wrapping
+
+
+# save_kable(glmtable_html, "glmtable.html")
+# library(webshot)
+# 
+# # Convert the HTML file to an image
+# webshot("glmtable.html", "glmtable.png")
+
+```
+
 
 ```{r}
 
-# ANOVA
-anova_result <- aov(log10(CFUs_whole) ~ group, data = tidy_cfu_meta_joined)
-
-# Extract p-values from ANOVA
-p_values <- summary(anova_result)[["Pr(>F)"]]
-
-# Perform Tukey's post hoc test for group comparisons
-tukey_result <- TukeyHSD(anova_result)
-
-# Extract p-values from Tukey's test
-p_values <- tukey_result[[1]][, "p adj"]
-
-p_values
-# Specify the pairs of groups for significance bars
-significant_comparisons <- p_values < 0.05  # Example: using a significance level of 0.05
-significant_comparisons
-
-# Create a data frame
-comparison_df <- data.frame(
-  p_value = p_values,
-  significant = significant_comparisons)
-comparison_df <- comparison_df %>% rownames_to_column("vaccine")
-
-comparison_df
-
-
-# Create a function to add asterisks based on p-values
-add_asterisks <- function(p_value) {
-  if (p_value < 0.00009) {
-    return("****")
-  } else if (p_value < 0.0009) {
-    return("***")
-  } else if (p_value < 0.009) {
-    return("**")
-  } else if (p_value < 0.05) {
-    return("*")
-  } else {
-    return("ns")
-  }
-}
-
-# Add asterisks to the comparison_df
-comparison_df$`significance level` <- sapply(comparison_df$p_value, add_asterisks)
-
-# Display the updated comparison_df
-print(comparison_df)
-
-
-
-
-
-# Print the resulting data frame
-library(kableExtra)
-
-kable(comparison_df, caption = "Comparison Results", align = "c")
+# # ANOVA
+# anova_result <- aov(log10(CFUs_whole) ~ group, data = tidy_cfu_meta_joined)
+# 
+# # Extract p-values from ANOVA
+# p_values <- summary(anova_result)[["Pr(>F)"]]
+# 
+# # Perform Tukey's post hoc test for group comparisons
+# tukey_result <- TukeyHSD(anova_result)
+# 
+# # Extract p-values from Tukey's test
+# p_values <- tukey_result[[1]][, "p adj"]
+# 
+# p_values
+# # Specify the pairs of groups for significance bars
+# significant_comparisons <- p_values < 0.05  # Example: using a significance level of 0.05
+# significant_comparisons
+# 
+# # Create a data frame
+# comparison_df <- data.frame(
+#   p_value = p_values,
+#   significant = significant_comparisons)
+# comparison_df <- comparison_df %>% rownames_to_column("vaccine")
+# 
+# comparison_df
+# 
+# 
+# # Create a function to add asterisks based on p-values
+# add_asterisks <- function(p_value) {
+#   if (p_value < 0.00009) {
+#     return("****")
+#   } else if (p_value < 0.0009) {
+#     return("***")
+#   } else if (p_value < 0.009) {
+#     return("**")
+#   } else if (p_value < 0.05) {
+#     return("*")
+#   } else {
+#     return("ns")
+#   }
+# }
+# 
+# # Add asterisks to the comparison_df
+# comparison_df$`significance level` <- sapply(comparison_df$p_value, add_asterisks)
+# 
+# # Display the updated comparison_df
+# print(comparison_df)
+# 
+# 
+# 
+# 
+# 
+# # Print the resulting data frame
+# library(kableExtra)
+# 
+# kable(comparison_df, caption = "Comparison Results", align = "c")
 ```
 
 
