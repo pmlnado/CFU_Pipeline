@@ -70,7 +70,8 @@ library(ggbeeswarm)
 #Replace w/ path to CFU sheet
 # path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx")
 
-path <- c("R:\\RSTOR-HenaO_lab\\Pablo\\CFU_Pipeline\\SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx")
+path <- "SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx"
+
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]

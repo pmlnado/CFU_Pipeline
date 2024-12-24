@@ -1,0 +1,448 @@
+---
+title: "CFU Coding pipeline"
+author:
+- name: Pablo Maldonado
+  affiliation: Colorado State University
+date: '2024-2-28'
+output:
+  html_document: default
+  word_document: default
+subtitle: CFU plotting 
+---
+
+```{r global options, echo=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, error = FALSE, message = FALSE, warning = FALSE)
+```
+
+## Data description
+
+The data are collected in a spreadsheet with multiple sheets. The first sheet
+(named "[x]") is used to record some metadata for the experiment, while the 
+following sheets are used to record CFUs counts from the plates used for samples
+from each organ, with one sheet per organ. For example, if you plated data
+from both the lung and spleen, there would be three sheets in the file: one 
+with the metadata, one with the plate counts for the lung, and one with the
+plate counts for the spleen. 
+
+The metadata sheet is used to record information about the overall process of
+plating the data. Values from this sheet will be used in calculating the bacterial
+load in the original sample based on the CFU counts. This spreadsheet includes
+the following columns: 
+
+- `organ`: Include one row for each organ that was plated in the experiment. 
+You should name the organ all in lowercase (e.g., "lung", "spleen"). You 
+should use the same name to also name the sheet that records data for that organ
+for example, if you have rows in the metadata sheet for "lung" and "spleen", 
+then you should have two other sheets in the file, one sheet named "lung" and 
+one named "spleen", which you'll use to store the plate counts for each of those
+organs.
+- `prop_resuspended`: In this column, give the proportion of that organ that 
+was plated. For example, if you plated half the lung, then in the "lung" row
+of this spread sheet, you should put 0.5 in the `prop_resuspended` column. 
+- `total_resuspended_uL`: This column contains an original volume of tissue homogenate. 
+For example, raw lung tissue is homogenized in 500 uL of PBS in a tube containing metal beads. 
+- `og_aliquot_uL`: 100 uL of th total_resuspended slurry would be considered an original 
+aliquot and is used to peform serial dilutions.
+- `dilution_factor`: Amount of the original stock solution that is present in the total solution, 
+after dilution(s)
+- `plated_uL`: Amount of suspension + diluent plated on section of solid agar 
+
+## Read in data
+
+```{r}
+library(readxl)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(stringr)
+library(tidyverse)
+library(gridExtra)
+library(ggplot2)
+library(ggpubr)
+library(viridis)
+library(vcd)
+library(ggmosaic)
+library(kableExtra)
+library(ggbeeswarm)
+```
+
+```{r}
+#Replace w/ path to CFU sheet
+# path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx")
+
+path <- c("R:\\RSTOR-HenaO_lab\\Pablo\\CFU_Pipeline\\SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx")
+
+sheet_names <- excel_sheets(path)
+sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
+
+merged_data <- list()
+
+for(i in 1:length(sheet_names)){
+  data <- read_excel(path, sheet = sheet_names[i]) %>% 
+    mutate(organ = paste0(sheet_names[i]))
+  data <- data %>% 
+    #mutate(missing_col = NA) %>% 
+    mutate_if(is.double, as.numeric) %>% 
+    mutate_if(is.numeric, as.character) %>% 
+    pivot_longer(starts_with("dil_"), names_to = "dilution",
+                 values_to = "CFUs") %>% 
+    mutate(dilution = str_extract(dilution, "[0-9]+"),
+           dilution = as.numeric(dilution))
+
+  merged_data[[i]] <- data
+}
+  
+all_data <- bind_rows(merged_data, .id = "column_label") %>% 
+    dplyr::select(-column_label)
+  
+head(merged_data)
+all_data
+```
+
+## Exploratory analysis and quality checks
+
+### Exploratory analysis
+
+**Dimensions of input data:**
+
+Based on the input data, data were collected for the following organ or 
+organs: 
+
+The following number of mice were included for each: 
+
+The following number of replicates were recorded at each count date for 
+each experimental group: 
+
+The following number of dilutions and dilution level were recorded for 
+each organ: 
+
+**People who plated and collected the data. Date or dates of counting:**
+
+Based on the input data, the plates included in these data were counted by 
+the following person or persons: 
+Based on the input data, the plates included in these data were counted on 
+the following date or dates: 
+
+```{r}
+all_data %>%
+  dplyr::select(organ, who_plated, who_counted, count_date) %>%
+  distinct()
+
+all_data <- all_data %>%
+  filter(CFUs != "TNTC")
+
+all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG", "BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", "BCG + SolaVAX-IN-Laporte 2x", "BCG 2x"))
+
+# FILTERING GROUPS
+# all_data <- all_data %>%
+#   dplyr::filter(group %in% c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+# 
+# all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
+
+all_data <- all_data %>%
+  mutate(group = recode(group,
+                         "BCG + SolaVAX-IM-CpG 2x" = "BCG + SolaVAX-IM-CpG1018 2x",
+                         "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG" = "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018",
+                        "BCG 2x" = "BCG + BCG",
+                        "BCG 1x" = "BCG",
+                        "BCG + SolaVAX-IN-Laporte 2x" = "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+
+
+all_data %>%
+  distinct(group)
+
+
+```
+
+**Distribution of CFUs at each dilution:**
+
+Here's a plot that shows how many plates were too numerous to count at each 
+dilution level: 
+
+Here is a plot that shows how the CFU counts were distributed by dilution
+level in the data: 
+
+## Identify a good dilution for each sample
+
+
+```{r}
+#choose max cfu in each sample
+
+# 
+# tidy_cfu_data <- all_data %>%
+#   mutate(dilution = str_extract(dilution, "[0-9]+"),
+#          dilution = as.numeric(dilution)) %>%
+#   mutate(CFUs = as.numeric(CFUs)) %>%
+#   filter(CFUs >= 2, CFUs <= 200) %>%
+#   group_by(group, mouse, organ, sex) %>%
+#   slice_max(CFUs) %>%
+#   ungroup()
+
+
+tidy_cfu_data <- all_data %>%
+  mutate(dilution = str_extract(dilution, "[0-9]+"),
+         dilution = as.numeric(dilution)) %>%
+  mutate(CFUs = as.numeric(CFUs)) %>%
+  filter(CFUs >= 2, CFUs <= 120) %>%
+  #filter(dilution == 5) %>%
+  #filter(dilution %in% c(2, 3)) %>%
+  group_by(group, mouse, organ) %>%
+  slice(which.min(ifelse(CFUs >= 2 & CFUs <= 120, dilution, Inf))) %>% # which.min returns the index of the row with the minimum dilution value within the specified CFUs range
+  ungroup()
+
+# Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
+meta <- read_excel(path, sheet = "metadata")
+
+tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+  group_by(group) %>% 
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
+         CFUs, CFUs_whole) %>% 
+  ungroup()
+
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+# 
+# tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+#   filter(!(mouse == "B" & group == "BCG 1x"))
+
+tidy_cfu_meta_joined 
+
+
+
+```
+
+
+
+GLM
+
+```{r}
+library(knitr)
+library(broom)
+
+tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+  dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+
+glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
+                  data = tidy_cfu_meta_joined, 
+                  family = quasipoisson)
+
+glm_summary <- tidy(glm_result)
+
+# Add significance stars based on p-value
+glm_summary$Significance <- with(glm_summary, 
+                                 ifelse(p.value < 0.001, "***", 
+                                        ifelse(p.value < 0.01, "**", 
+                                               ifelse(p.value < 0.05, "*", ""))))
+
+
+glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
+glm_summary$term <- gsub("\\(Intercept\\)", "BCG", glm_summary$term)
+
+
+# glm_summary$term <- factor(glm_summary$term, 
+#                            levels = c("Saline", 
+#                                       "BCG", 
+#                                       "BCG + BCG", 
+#                                       "BCG + SolaVAX-IM-CpG1018 2x", 
+#                                       "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", 
+#                                       "BCG + SolaVAX-IM-AdVAX 2x", 
+#                                       "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", 
+#                                       "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+
+colnames(glm_summary) <- c("Coefficient", "Estimate", "SE", "Statistic", "p.value", "Significance")
+glm_summary <- glm_summary %>%
+  dplyr::select(-Statistic) %>%  
+  dplyr::filter(Coefficient != "BCG")
+
+glm_summary[,-1] <- lapply(glm_summary[,-1], function(x) if (is.numeric(x)) signif(x, 2) else x)
+
+glm_summary %>%
+  kable("html", caption = " ") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
+  row_spec(0, bold = TRUE, font_size = 12, color = "black") %>%  # Customize header text color to black
+  column_spec(1:ncol(glm_summary), 
+              extra_css = "white-space: nowrap; color: black;")  # Set all text to black and prevent wrapping
+
+
+# save_kable(glmtable_html, "glmtable.html")
+# library(webshot)
+# 
+# # Convert the HTML file to an image
+# webshot("glmtable.html", "glmtable.png")
+
+```
+
+
+
+
+```{r}
+tidy_cfu_meta_joined$group <- factor(tidy_cfu_meta_joined$group,
+                           levels = c("Saline",
+                                      "BCG",
+                                      "BCG + BCG",
+                                      "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+
+
+
+tidy_cfu_meta_joined %>%
+  ggplot(aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
+  geom_beeswarm(size = 3, shape = 21, alpha = 0.9, na.rm = TRUE, 
+                dodge.width = 0.75, color = "black") +
+  scale_color_viridis_d(name = " ", alpha = 1) +  
+  scale_fill_viridis_d(name = " ", alpha = 1) + 
+  theme_minimal() + 
+ theme(
+        axis.text.x = element_blank(),
+        #axis.text.x = element_text(angle = 90, hjust = 1, size = 16), 
+        axis.text.y = element_text(size = 16),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        legend.text = element_text(size = 8), 
+        legend.title = element_text(size = 16), 
+        legend.key.size = unit(1, 'cm'), 
+        legend.position = ("right"),
+        plot.title = element_text(color="black", size=16, face="bold")) + 
+  theme(strip.text = element_text(size=16, face = "bold")) +
+        scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) + 
+  labs(y = "Total CFU Log10", x = "", fill = "Vaccine", color = "Vaccine") +
+  ggtitle("SolaVAX-TB 2x Boost Day 90") +
+  ylim(4, 7)
+
+
+#Do not delete
+#df = 5
+```
+EXTRA CODE
+
+```{r}
+
+# # ANOVA
+# anova_result <- aov(log10(CFUs_whole) ~ group, data = tidy_cfu_meta_joined)
+# 
+# # Extract p-values from ANOVA
+# p_values <- summary(anova_result)[["Pr(>F)"]]
+# 
+# # Perform Tukey's post hoc test for group comparisons
+# tukey_result <- TukeyHSD(anova_result)
+# 
+# # Extract p-values from Tukey's test
+# p_values <- tukey_result[[1]][, "p adj"]
+# 
+# p_values
+# # Specify the pairs of groups for significance bars
+# significant_comparisons <- p_values < 0.05  # Example: using a significance level of 0.05
+# significant_comparisons
+# 
+# # Create a data frame
+# comparison_df <- data.frame(
+#   p_value = p_values,
+#   significant = significant_comparisons)
+# comparison_df <- comparison_df %>% rownames_to_column("vaccine")
+# 
+# comparison_df
+# 
+# 
+# # Create a function to add asterisks based on p-values
+# add_asterisks <- function(p_value) {
+#   if (p_value < 0.00009) {
+#     return("****")
+#   } else if (p_value < 0.0009) {
+#     return("***")
+#   } else if (p_value < 0.009) {
+#     return("**")
+#   } else if (p_value < 0.05) {
+#     return("*")
+#   } else {
+#     return("ns")
+#   }
+# }
+# 
+# # Add asterisks to the comparison_df
+# comparison_df$`significance level` <- sapply(comparison_df$p_value, add_asterisks)
+# 
+# # Display the updated comparison_df
+# print(comparison_df)
+# 
+# 
+# 
+# 
+# 
+# # Print the resulting data frame
+# library(kableExtra)
+# 
+# kable(comparison_df, caption = "Comparison Results", align = "c")
+
+
+
+
+
+
+# female_combined_df <- as.data.frame(female_p_values) %>%
+#   rownames_to_column("group") %>%
+#   left_join(as.data.frame(female_significant_comparisons) %>%
+#               rownames_to_column("group"), by = "group")
+# female_combined_df
+# 
+# male_combined_df <- as.data.frame(male_p_values) %>%
+#   rownames_to_column("group") %>%
+#   left_join(as.data.frame(male_significant_comparisons) %>%
+#               rownames_to_column("group"), by = "group")
+# male_combined_df
+# 
+# left_join(female_combined_df, male_combined_df, by = "group")
+
+
+
+# 
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
+# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
+
+
+
+
+
+
+
+
+# # Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
+# meta <- read_excel(path, sheet = "metadata")
+# 
+# lungD90tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
+#   group_by(group) %>% 
+#   mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+#   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
+#          CFUs, CFUs_whole) %>% 
+#   ungroup()
+# 
+# # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+# #   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
+# # 
+# # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
+# #   filter(!(mouse == "B" & group == "BCG 1x"))
+# 
+# # lungD90tidy_cfu_meta_joined 
+# # 
+# # setwd("R:/RSTOR-HenaO_lab/Pablo/CFU_Pipeline")
+# # getwd()
+# # 
+# # write.csv(lungD90tidy_cfu_meta_joined, "lungD90tidy_cfu_meta_joined.csv", row.names = FALSE)
+# 
+# # Print the dataframe
+# lungD90tidy_cfu_meta_joined
+# 
+# 
+# # tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+# #   dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
+# # 
+# # tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+# 
+# 
+# tidy_cfu_meta_joined %>%
+#   distinct(group)
+```
