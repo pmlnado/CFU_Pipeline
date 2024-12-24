@@ -66,6 +66,7 @@ library(ggpubr)
 path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/IMPAcTB_Lung_Base/IMPACTB_CFU_Base_AllDays_Lung.xlsx")
 
 
+
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
 
