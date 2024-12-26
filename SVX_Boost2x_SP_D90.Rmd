@@ -220,8 +220,8 @@ GLM
 library(knitr)
 library(broom)
 
-tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-  dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+# tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+#   dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
 
 glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
                   data = tidy_cfu_meta_joined, 
