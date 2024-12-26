@@ -233,7 +233,7 @@ glm_summary <- tidy(glm_result)
 glm_summary$Significance <- with(glm_summary, 
                                  ifelse(p.value < 0.001, "***", 
                                         ifelse(p.value < 0.01, "**", 
-                                               ifelse(p.value < 0.05, "*", ""))))
+                                               ifelse(p.value < 0.05, "*", "ns"))))
 
 
 glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
@@ -310,8 +310,7 @@ tidy_cfu_meta_joined %>%
   ylim(3, 6)
 
 
-#Do not delete
-#df = 5
+
 ```
 EXTRA CODE
 
