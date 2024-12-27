@@ -67,7 +67,7 @@ library(kableExtra)
 
 ```{r}
 #Replace w/ path to CFU sheet
-path <- c("R:\\RSTOR-HenaO_lab\\Pablo\\CFU_Pipeline\\SVX_Boost2X_Lung_Day30_cfu_numbers.xlsx")
+path <- "SVX_Boost2X_Spleen_Day30_cfu_numbers.xlsx"
 
 sheet_names <- excel_sheets(path)
 sheet_names <- sheet_names[!sheet_names %in% c("metadata")]
@@ -197,7 +197,7 @@ meta <- read_excel(path, sheet = "metadata")
 
 tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
-  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
+  mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.5) %>%
   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
@@ -216,9 +216,9 @@ tidy_cfu_meta_joined
 
 ```{r}
 
-# FILTERING GROUPS
-tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-  dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+# # FILTERING GROUPS
+# tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+#   dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
 
 # all_data$group = factor(all_data$group, levels = c("Saline", "BCG 1x", "BCG 2x", "BCG + SolaVAX-IM-CpG 2x", "BCG + SolaVAX-IM-CpG + SolaVAX-IN-CPG"))
 
@@ -234,7 +234,7 @@ glm_summary <- tidy(glm_result)
 glm_summary$Significance <- with(glm_summary, 
                                  ifelse(p.value < 0.001, "***", 
                                         ifelse(p.value < 0.01, "**", 
-                                               ifelse(p.value < 0.05, "*", ""))))
+                                               ifelse(p.value < 0.05, "*", "ns"))))
 
 
 glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
@@ -274,11 +274,11 @@ glm_summary %>%
 
 ```{r}
 
-tidy_cfu_meta_joined$group <- factor(tidy_cfu_meta_joined$group,
-                           levels = c("Saline",
-                                      "BCG",
-                                      "BCG + BCG",
-                                      "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+# tidy_cfu_meta_joined$group <- factor(tidy_cfu_meta_joined$group,
+#                            levels = c("Saline",
+#                                       "BCG",
+#                                       "BCG + BCG",
+#                                       "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
 
 
 
@@ -304,7 +304,7 @@ tidy_cfu_meta_joined %>%
         scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) + 
   labs(y = "Total CFU Log10", x = "", fill = "Vaccine", color = "Vaccine") +
   ggtitle("SolaVAX-TB 2x Boost Day 30") +
-  ylim(4, 7)
+  ylim(2.5, 5.5)
 ```
 EXTRA CODE
 ```{r}
