@@ -70,7 +70,7 @@ library(ggbeeswarm)
 #Replace w/ path to CFU sheet
 # path <- c("/Volumes/rstor-henao_lab/Pablo/CFU_Pipeline/SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx")
 
-path <- "SVX_Boost2X_Lung_Day90_cfu_numbers.xlsx"
+path <- "SVX_Boost2X_Lung_Day30and90_cfu_numbers.xlsx"
 
 
 sheet_names <- excel_sheets(path)
@@ -187,7 +187,7 @@ tidy_cfu_data <- all_data %>%
   filter(CFUs >= 2, CFUs <= 120) %>%
   #filter(dilution == 5) %>%
   #filter(dilution %in% c(2, 3)) %>%
-  group_by(group, mouse, organ) %>%
+  group_by(day, group, mouse, organ) %>%
   slice(which.min(ifelse(CFUs >= 2 & CFUs <= 120, dilution, Inf))) %>% # which.min returns the index of the row with the minimum dilution value within the specified CFUs range
   ungroup()
 
@@ -197,7 +197,7 @@ meta <- read_excel(path, sheet = "metadata")
 tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
   group_by(group) %>% 
   mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
-  dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
+  dplyr::select(organ, count_date, who_plated, who_counted, day, group, mouse, dilution, 
          CFUs, CFUs_whole) %>% 
   ungroup()
 
@@ -221,8 +221,8 @@ GLM
 library(knitr)
 library(broom)
 
-tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-  dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+# tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
+#   dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
 
 glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
                   data = tidy_cfu_meta_joined, 
@@ -277,12 +277,12 @@ glm_summary %>%
 
 
 
-```{r}
-tidy_cfu_meta_joined$group <- factor(tidy_cfu_meta_joined$group,
-                           levels = c("Saline",
-                                      "BCG",
-                                      "BCG + BCG",
-                                      "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+```{r fig.width=15, fig.height=6}
+# tidy_cfu_meta_joined$group <- factor(tidy_cfu_meta_joined$group,
+#                            levels = c("Saline",
+#                                       "BCG",
+#                                       "BCG + BCG",
+#                                       "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
 
 
 
@@ -290,22 +290,23 @@ tidy_cfu_meta_joined %>%
   ggplot(aes(x = group, y = log10(CFUs_whole), fill = group, color = group)) +
   geom_beeswarm(size = 3, shape = 21, alpha = 0.9, na.rm = TRUE, 
                 dodge.width = 0.75, color = "black") +
+  facet_wrap(~day) +
   scale_color_viridis_d(name = " ", alpha = 1) +  
   scale_fill_viridis_d(name = " ", alpha = 1) + 
   theme_minimal() + 
- theme(
+  theme(
         axis.text.x = element_blank(),
         #axis.text.x = element_text(angle = 90, hjust = 1, size = 16), 
         axis.text.y = element_text(size = 16),
         axis.title.x = element_blank(),
         axis.title.y = element_text(size = 16, face = "bold"),
-        legend.text = element_text(size = 8), 
+        legend.text = element_text(size = 10), 
         legend.title = element_text(size = 16), 
         legend.key.size = unit(1, 'cm'), 
-        legend.position = ("right"),
-        plot.title = element_text(color="black", size=16, face="bold")) + 
-  theme(strip.text = element_text(size=16, face = "bold")) +
-        scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) + 
+        legend.position = "bottom",  # Keep only this line for legend position
+        plot.title = element_text(color="black", size=16, face="bold"),
+        strip.text = element_text(size=16, face = "bold")) + 
+  scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) + 
   labs(y = "Total CFU Log10", x = "", fill = "Vaccine", color = "Vaccine") +
   ggtitle("SolaVAX-TB 2x Boost Day 90") +
   ylim(4, 7)
@@ -313,6 +314,7 @@ tidy_cfu_meta_joined %>%
 
 #Do not delete
 #df = 5
+
 ```
 EXTRA CODE
 
