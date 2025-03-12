@@ -64,6 +64,9 @@ library(vcd)
 library(ggmosaic)
 library(kableExtra)
 library(ggbeeswarm)
+library(emmeans)
+library(knitr)
+library(broom)
 ```
 
 ```{r}
@@ -213,58 +216,212 @@ tidy_cfu_meta_joined
 
 ```
 
+#Multiple comparisons GLM its good 
+```{r}
+
+glm_result <- glm(CFUs_whole ~ group, data = tidy_cfu_meta_joined90, family = quasipoisson)
+
+emmeans_result <- emmeans(glm_result, ~ group)
+
+contrast_result <- as.data.frame(pairs(emmeans_result, reverse = TRUE))
+
+contrast_result 
 
 
-GLM
+contrast_result <- as.data.frame(pairs(emmeans_result, reverse = TRUE))
+
+# Convert contrast_result to a tibble
+contrast_result_tibble <- as_tibble(contrast_result)
+
+# View the tibble
+contrast_result_tibble %>%
+  filter(p.value <= 0.05)
+
+```
+
+
+
+# GLM Day 30
 
 ```{r}
-library(knitr)
-library(broom)
 
-# tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-#   dplyr::filter(group %in% c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Mucosimmune-IN-2x"))
+tidy_cfu_meta_joined30 <- tidy_cfu_meta_joined %>%
+  dplyr::filter(day == 30)
 
 glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
-                  data = tidy_cfu_meta_joined, 
+                  data = tidy_cfu_meta_joined30, 
                   family = quasipoisson)
 
 glm_summary <- tidy(glm_result)
 
 # Add significance stars based on p-value
 glm_summary$Significance <- with(glm_summary, 
+                                 ifelse(p.value > 0.05, "ns",
                                  ifelse(p.value < 0.001, "***", 
                                         ifelse(p.value < 0.01, "**", 
-                                               ifelse(p.value < 0.05, "*", ""))))
+                                               ifelse(p.value < 0.05, "*", "")))))
 
 
 glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
 glm_summary$term <- gsub("\\(Intercept\\)", "BCG", glm_summary$term)
 
 
-# glm_summary$term <- factor(glm_summary$term, 
-#                            levels = c("Saline", 
-#                                       "BCG", 
-#                                       "BCG + BCG", 
-#                                       "BCG + SolaVAX-IM-CpG1018 2x", 
-#                                       "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", 
-#                                       "BCG + SolaVAX-IM-AdVAX 2x", 
-#                                       "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX", 
-#                                       "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
+glm_summary  <- glm_summary  %>%
+  mutate(
+    `Odds Ratio` = exp(estimate),# Exponentiate the estimate to get odds ratio
+    lower_ci = exp(estimate - 1.96 * std.error), # 95% CI lower bound
+    upper_ci = exp(estimate + 1.96 * std.error)  # 95% CI upper bound
+  )
 
-colnames(glm_summary) <- c("Coefficient", "Estimate", "SE", "Statistic", "p.value", "Significance")
 glm_summary <- glm_summary %>%
-  dplyr::select(-Statistic) %>%  
-  dplyr::filter(Coefficient != "BCG")
+  mutate(
+    `Percent Change in Odds` = ifelse(
+      `Odds Ratio` >= 1,
+      (`Odds Ratio` - 1) * 100,        # Odds ratio >= 1
+      -(1 - `Odds Ratio`) * 100       # Odds ratio < 1
+    ),
+    `Percent Change in Odds` = ifelse(
+      `Percent Change in Odds` >= 0,
+      paste0("+", round(`Percent Change in Odds`, 2)), # Add "+" sign for increases
+      as.character(round(`Percent Change in Odds`, 2)) # Keep "-" sign for decreases
+    )
+  )
+
+glm_summary <- glm_summary %>%
+  dplyr::select(term, estimate, `Odds Ratio`, `Percent Change in Odds`, Significance)
+
+
+colnames(glm_summary) <- c("Group", "Estimated Effect", "Odds Ratio", "Percent Change in Odds", "Significance")
+glm_summary <- glm_summary %>%
+  dplyr::filter(Group != "BCG")
 
 glm_summary[,-1] <- lapply(glm_summary[,-1], function(x) if (is.numeric(x)) signif(x, 2) else x)
 
-glm_summary %>%
-  kable("html", caption = " ") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
-  row_spec(0, bold = TRUE, font_size = 12, color = "black") %>%  # Customize header text color to black
-  column_spec(1:ncol(glm_summary), 
-              extra_css = "white-space: nowrap; color: black;")  # Set all text to black and prevent wrapping
+# glm_summary %>%
+#   kable("html", caption = " ") %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
+#   row_spec(0, bold = TRUE, font_size = 12, color = "black") %>%  # Customize header text color to black
+#   column_spec(1:ncol(glm_summary), 
+#               extra_css = "white-space: nowrap; color: black;")  # Set all text to black and prevent wrapping
 
+
+library(kableExtra)
+library(webshot)
+
+glm_summary$`Estimated Effect` <- signif(glm_summary$`Estimated Effect`, digits = 2)
+glm_summary30 <- glm_summary
+
+kbl(glm_summary, caption = "Day 30 Lung CFU as Compared to Single Dose BCG", align = c("l", "c", "c", "c", "c")) %>%
+  kable_classic(full_width = FALSE, lightable_options = c("striped", "hover", "condensed"))
+
+
+
+
+# Convert the saved HTML to PNG
+table_html <- kbl(glm_summary, 
+                  caption = "Day 30 Lung CFU as Compared to Single Dose BCG", 
+                  align = c("l", "c", "c", "c", "c")) %>%
+  kable_classic(full_width = FALSE, lightable_options = c("striped", "hover", "condensed")) %>%
+  save_kable("lungglm30.html")
+
+
+table_html
+
+
+webshot("lungglm30.html", "lungglm30.png", zoom = 2)
+
+# save_kable(glmtable_html, "glmtable.html")
+# library(webshot)
+# 
+# # Convert the HTML file to an image
+# webshot("glmtable.html", "glmtable.png")
+
+```
+
+```{r}
+
+tidy_cfu_meta_joined90 <- tidy_cfu_meta_joined %>%
+  dplyr::filter(day == 90)
+
+glm_result <- glm(CFUs_whole ~ relevel(group, ref = "BCG"), 
+                  data = tidy_cfu_meta_joined90, 
+                  family = quasipoisson)
+
+glm_summary <- tidy(glm_result)
+
+# Add significance stars based on p-value
+glm_summary$Significance <- with(glm_summary, 
+                                 ifelse(p.value > 0.05, "ns",
+                                 ifelse(p.value < 0.001, "***", 
+                                        ifelse(p.value < 0.01, "**", 
+                                               ifelse(p.value < 0.05, "*", "")))))
+
+
+glm_summary$term <- gsub("relevel\\(group, ref = \"BCG\"\\)", "", glm_summary$term)  # Remove the relevel part
+glm_summary$term <- gsub("\\(Intercept\\)", "BCG", glm_summary$term)
+
+
+glm_summary  <- glm_summary  %>%
+  mutate(
+    `Odds Ratio` = exp(estimate),# Exponentiate the estimate to get odds ratio
+    lower_ci = exp(estimate - 1.96 * std.error), # 95% CI lower bound
+    upper_ci = exp(estimate + 1.96 * std.error)  # 95% CI upper bound
+  )
+
+glm_summary <- glm_summary %>%
+  mutate(
+    `Percent Change in Odds` = ifelse(
+      `Odds Ratio` >= 1,
+      (`Odds Ratio` - 1) * 100,        # Odds ratio >= 1
+      -(1 - `Odds Ratio`) * 100       # Odds ratio < 1
+    ),
+    `Percent Change in Odds` = ifelse(
+      `Percent Change in Odds` >= 0,
+      paste0("+", round(`Percent Change in Odds`, 2)), # Add "+" sign for increases
+      as.character(round(`Percent Change in Odds`, 2)) # Keep "-" sign for decreases
+    )
+  )
+
+glm_summary <- glm_summary %>%
+  dplyr::select(term, estimate, `Odds Ratio`, `Percent Change in Odds`, Significance)
+
+
+colnames(glm_summary) <- c("Group", "Estimated Effect", "Odds Ratio", "Percent Change in Odds", "Significance")
+glm_summary <- glm_summary %>%
+  dplyr::filter(Group != "BCG")
+
+glm_summary[,-1] <- lapply(glm_summary[,-1], function(x) if (is.numeric(x)) signif(x, 2) else x)
+
+# glm_summary %>%
+#   kable("html", caption = " ") %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
+#   row_spec(0, bold = TRUE, font_size = 12, color = "black") %>%  # Customize header text color to black
+#   column_spec(1:ncol(glm_summary), 
+#               extra_css = "white-space: nowrap; color: black;")  # Set all text to black and prevent wrapping
+
+
+
+
+glm_summary$`Estimated Effect` <- signif(glm_summary$`Estimated Effect`, digits = 2)
+
+kbl(glm_summary, caption = "Day 90 Lung CFU as Compared to Single Dose BCG", align = c("l", "c", "c", "c", "c")) %>%
+  kable_classic(full_width = FALSE, lightable_options = c("striped", "hover", "condensed"))
+
+glm_summary90 <- glm_summary
+
+
+
+table_html <- kbl(glm_summary, 
+                  caption = "Day 90 Lung CFU as Compared to Single Dose BCG", 
+                  align = c("l", "c", "c", "c", "c")) %>%
+  kable_classic(full_width = FALSE, lightable_options = c("striped", "hover", "condensed")) %>%
+  save_kable("lungglm90.html")
+
+
+table_html
+
+
+webshot("lungglm90.html", "lungglm90.png", zoom = 2)
 
 # save_kable(glmtable_html, "glmtable.html")
 # library(webshot)
@@ -275,8 +432,36 @@ glm_summary %>%
 ```
 
 
+# Merged Table
+```{r}
+glm_summary30 <- glm_summary30 %>%
+  mutate(day = "30")
+
+glm_summary90 <- glm_summary90 %>%
+  mutate(day = "90")
+
+mergedeglm <- bind_rows(glm_summary30, glm_summary90)
+mergedeglm
 
 
+reshaped_data <- mergedeglm %>%
+  pivot_wider(names_from = `day`, values_from = c(`Estimated Effect`, `Odds Ratio`, `Percent Change in Odds`, Significance))
+ reshaped_data <- reshaped_data[c(1, 2, 4, 6, 8, 3, 5, 7, 9)] 
+colnames(reshaped_data) <- gsub("_.*", "", colnames(reshaped_data))
+
+
+
+  
+# Create the kable table
+table_html <- kbl(reshaped_data) %>%
+  kable_classic(full_width = FALSE, lightable_options = c("striped", "hover", "condensed")) %>%
+  add_header_above(c(" " = 1, 
+                     "Day 30" = 4, 
+                     "Day 90" = 4)) 
+```
+
+
+# PLOT IT
 ```{r fig.width=15, fig.height=9}
 # tidy_cfu_meta_joined$group <- factor(tidy_cfu_meta_joined$group,
 #                            levels = c("Saline",
@@ -309,143 +494,10 @@ tidy_cfu_meta_joined %>%
   scale_y_continuous(limits = function(x) c(min(x), max(x) * 1.1)) + 
   labs(y = "Total CFU Log10", x = "", fill = "Vaccine", color = "Vaccine") +
   ggtitle("SolaVAX-TB 2x Boost Day 90") +
-  ylim(4, 7)
+  ylim(3, 6)
 
 
 #Do not delete
 #df = 5
 
-```
-EXTRA CODE
-
-```{r}
-
-# # ANOVA
-# anova_result <- aov(log10(CFUs_whole) ~ group, data = tidy_cfu_meta_joined)
-# 
-# # Extract p-values from ANOVA
-# p_values <- summary(anova_result)[["Pr(>F)"]]
-# 
-# # Perform Tukey's post hoc test for group comparisons
-# tukey_result <- TukeyHSD(anova_result)
-# 
-# # Extract p-values from Tukey's test
-# p_values <- tukey_result[[1]][, "p adj"]
-# 
-# p_values
-# # Specify the pairs of groups for significance bars
-# significant_comparisons <- p_values < 0.05  # Example: using a significance level of 0.05
-# significant_comparisons
-# 
-# # Create a data frame
-# comparison_df <- data.frame(
-#   p_value = p_values,
-#   significant = significant_comparisons)
-# comparison_df <- comparison_df %>% rownames_to_column("vaccine")
-# 
-# comparison_df
-# 
-# 
-# # Create a function to add asterisks based on p-values
-# add_asterisks <- function(p_value) {
-#   if (p_value < 0.00009) {
-#     return("****")
-#   } else if (p_value < 0.0009) {
-#     return("***")
-#   } else if (p_value < 0.009) {
-#     return("**")
-#   } else if (p_value < 0.05) {
-#     return("*")
-#   } else {
-#     return("ns")
-#   }
-# }
-# 
-# # Add asterisks to the comparison_df
-# comparison_df$`significance level` <- sapply(comparison_df$p_value, add_asterisks)
-# 
-# # Display the updated comparison_df
-# print(comparison_df)
-# 
-# 
-# 
-# 
-# 
-# # Print the resulting data frame
-# library(kableExtra)
-# 
-# kable(comparison_df, caption = "Comparison Results", align = "c")
-
-
-
-
-
-
-# female_combined_df <- as.data.frame(female_p_values) %>%
-#   rownames_to_column("group") %>%
-#   left_join(as.data.frame(female_significant_comparisons) %>%
-#               rownames_to_column("group"), by = "group")
-# female_combined_df
-# 
-# male_combined_df <- as.data.frame(male_p_values) %>%
-#   rownames_to_column("group") %>%
-#   left_join(as.data.frame(male_significant_comparisons) %>%
-#               rownames_to_column("group"), by = "group")
-# male_combined_df
-# 
-# left_join(female_combined_df, male_combined_df, by = "group")
-
-
-
-# 
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 1x"]))
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG 2x"]))
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 2x"]))
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"]))
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX 2x"]))
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"]))
-# with(tidy_cfu_meta_joined, t.test(log10(CFUs_whole)[group == "Saline"], log10(CFUs_whole)[group == "BCG + SolaVAX-IN-Laporte 2x"]))
-
-
-
-
-
-
-
-
-# # Calculating CFU/ml for every qualifying replicate between 10-75 CFUs. Column binding by organ name to the metadata sheet via inner_join().
-# meta <- read_excel(path, sheet = "metadata")
-# 
-# lungD90tidy_cfu_meta_joined  <- inner_join(meta, tidy_cfu_data) %>%
-#   group_by(group) %>% 
-#   mutate(CFUs_whole = ((CFUs * dilution_factor^dilution/volume_plated_ml) * total_resuspension_mL)/.33) %>%
-#   dplyr::select(organ, count_date, who_plated, who_counted, group,  mouse, dilution, 
-#          CFUs, CFUs_whole) %>% 
-#   ungroup()
-# 
-# # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-# #   filter(!(mouse == "D" & group == "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018"))
-# # 
-# # tidy_cfu_meta_joined  <- tidy_cfu_meta_joined %>%
-# #   filter(!(mouse == "B" & group == "BCG 1x"))
-# 
-# # lungD90tidy_cfu_meta_joined 
-# # 
-# # setwd("R:/RSTOR-HenaO_lab/Pablo/CFU_Pipeline")
-# # getwd()
-# # 
-# # write.csv(lungD90tidy_cfu_meta_joined, "lungD90tidy_cfu_meta_joined.csv", row.names = FALSE)
-# 
-# # Print the dataframe
-# lungD90tidy_cfu_meta_joined
-# 
-# 
-# # tidy_cfu_meta_joined <- tidy_cfu_meta_joined %>%
-# #   dplyr::filter(!group %in% c("BCG + SolaVAX-IM-AdVAX 2x", "BCG + SolaVAX-IM-CpG1018 2x", "BCG + SolaVAX-IM-CpG1018 + SolaVAX-IN-CPG1018", "BCG + SolaVAX-IM-AdVAX + SolaVAX-IN-AdVAX"))
-# # 
-# # tidy_cfu_meta_joined$group = factor(tidy_cfu_meta_joined$group, levels = c("Saline", "BCG", "BCG + BCG", "BCG + SolaVAX-Mtb + Laporte-IN-2x"))
-# 
-# 
-# tidy_cfu_meta_joined %>%
-#   distinct(group)
 ```
